@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.cjsah.scoretools.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "BlockItemMixin",
+    "BucketItemMixin",
+    "FlintAndSteelItemMixin",
+    "MinecraftServerMixin",
+    "ScoreboardCommandMixin",
+    "ScoreboardCriterionInvoker",
+    "ServerPlayerInteractionManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

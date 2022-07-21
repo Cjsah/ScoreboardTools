@@ -3,13 +3,14 @@
   "id": "mined",
   "version": "${version}",
 
-  "name": "MinedCount",
-  "description": "Mined Count Scoreboard",
+  "name": "ScoreboardTools",
+  "description": "Added some scoreboard criterion and some tools",
   "authors": [
     "Cjsah"
   ],
   "contact": {
-    "homepage": "https://www.cjsah.net"
+    "sources": "https://github.com/Cjsah/ScoreboardTools",
+    "issues": "https://github.com/Cjsah/ScoreboardTools/issues"
   },
 
   "license": "GPAL-3.0",
@@ -18,15 +19,12 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.cjsah.mined.MinedMain"
+      "net.cjsah.scoretools.ScoreboardTools"
     ]
   },
   "mixins": [
-    "mined.mixins.json"
+    "scoreboard-tools.mixins.json"
   ],
-
-  "accessWidener" : "mined.accesswidener",
-
   "depends": {
     "fabricloader": ">=0.7.4",
     "minecraft": ">=1.16"

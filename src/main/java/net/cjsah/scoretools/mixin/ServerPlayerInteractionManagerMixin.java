@@ -1,7 +1,7 @@
-package net.cjsah.mined.mixin;
+package net.cjsah.scoretools.mixin;
 
-import net.cjsah.mined.MinedMain;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
+import net.cjsah.scoretools.Criterion;
+import net.cjsah.scoretools.ScoreboardTools;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
@@ -13,13 +13,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerInteractionManager.class)
-public class BlockAfterBreakMixin {
+public class ServerPlayerInteractionManagerMixin {
 
     @Final
     @Shadow
     protected ServerPlayerEntity player;
 
-    @SuppressWarnings("ConstantConditions")
     @Inject(
             method = "tryBreakBlock",
             at = @At(
@@ -28,12 +27,6 @@ public class BlockAfterBreakMixin {
             )
     )
     private void onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.isBot(this.player)) this.player.getServer().getScoreboard().forEachScore(MinedMain.MINED_COUNT, this.player.getEntityName(), ScoreboardPlayerScore::incrementScore);
+        ScoreboardTools.addScore(this.player, Criterion.MINED_COUNT);
     }
-
-    private boolean isBot(ServerPlayerEntity player) {
-        if (MinedMain.BOT_CLASS == null) return false;
-        return MinedMain.BOT_CLASS.isInstance(player);
-    }
-
 }
