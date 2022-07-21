@@ -1,0 +1,13 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "net.cjsah.mined.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "BlockAfterBreakMixin"
+    ],
+    "client": [],
+    "injectors": {
+        "defaultRequire": 1
+  }
+}
