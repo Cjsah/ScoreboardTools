@@ -109,6 +109,11 @@ public class ScoreboardInternal {
             this.index = (this.index + 1) % size;
             return origin;
         }
+
+        @Override
+        public String toString() {
+            return this.list + ",slot:[" + this.slot + "],internal:[" + this.internal + "],index:[" + this.index + "]";
+        }
     }
 
 }

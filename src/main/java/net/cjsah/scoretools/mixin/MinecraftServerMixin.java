@@ -18,8 +18,9 @@ public class MinecraftServerMixin implements ScoreboardInternalFake {
     @Inject(
             method = "tickWorlds",
             at = @At(
-                    value = "INVOKE_ASSIGN",
-                    target = "Lnet/minecraft/server/PlayerManager;updatePlayerLatency()V"
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V",
+                    ordinal = 0
             )
     )
     private void scoreboardTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {

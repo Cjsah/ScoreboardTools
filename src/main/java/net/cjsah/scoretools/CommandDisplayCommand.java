@@ -20,9 +20,9 @@ public class CommandDisplayCommand {
                         execute(context, (internal, slot) -> internal.add(slot, ScoreboardObjectiveArgumentType.getObjective(context, "objective"))
                 )))).then(literal("remove").then(argument("objective", ScoreboardObjectiveArgumentType.scoreboardObjective()).executes(context ->
                         execute(context, (internal, slot) -> internal.remove(slot, ScoreboardObjectiveArgumentType.getObjective(context, "objective"))
-                ))).then(literal("internal").then(argument("internal", IntegerArgumentType.integer(1)).executes(context ->
+                )))).then(literal("internal").then(argument("internal", IntegerArgumentType.integer(1)).executes(context ->
                         execute(context, (internal, slot) -> internal.setInternal(slot, IntegerArgumentType.getInteger(context, "internal")))
-                ))))));
+                )))));
     }
 
     private static int execute(CommandContext<ServerCommandSource> context, BiConsumer<ScoreboardInternal, Integer> consumer) throws CommandSyntaxException {
