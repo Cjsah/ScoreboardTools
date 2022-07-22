@@ -10,7 +10,9 @@
     "MinecraftServerMixin",
     "ScoreboardCommandMixin",
     "ScoreboardCriterionInvoker",
-    "ServerPlayerInteractionManagerMixin"
+    "ScoreboardStateMixin",
+    "ServerPlayerInteractionManagerMixin",
+    "ServerScoreboardAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
