@@ -1,11 +1,9 @@
 package net.cjsah.scoretools.mixin;
 
-import net.cjsah.scoretools.ScoreboardInternal;
-import net.cjsah.scoretools.fake.ScoreboardInternalFake;
+import net.cjsah.scoretools.ScoreboardSchedule;
+import net.cjsah.scoretools.fake.ScoreboardScheduleFake;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardState;
 import net.minecraft.scoreboard.ServerScoreboard;
 import org.spongepowered.asm.mixin.Final;
@@ -25,22 +23,22 @@ public class ScoreboardStateMixin {
     @Inject(method = "readNbt", at = @At("RETURN"))
     private void read(NbtCompound nbt, CallbackInfoReturnable<ScoreboardState> cir) {
         if (nbt.contains("DisplayInternal")) {
-            this.internalImpl((internal) -> internal.readNbt(nbt.getCompound("DisplayInternal")));
+            this.scheduleExecute((internal) -> internal.readNbt(nbt.getCompound("DisplayInternal")));
         }
     }
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
     private void write(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
-        this.internalImpl((internal) -> {
+        this.scheduleExecute((internal) -> {
             NbtCompound compound = new NbtCompound();
             internal.writeNbt(compound);
-            nbt.put("DisplayInternal", compound);
+            if (!compound.isEmpty()) nbt.put("DisplayInternal", compound);
         });
     }
 
-    private void internalImpl(Consumer<ScoreboardInternal> consumer) {
+    private void scheduleExecute(Consumer<ScoreboardSchedule> consumer) {
         if (this.scoreboard instanceof ServerScoreboard scoreboard) {
-            consumer.accept(((ScoreboardInternalFake) ((ServerScoreboardAccessor) scoreboard).getServer()).getInternal());
+            consumer.accept(((ScoreboardScheduleFake) ((ServerScoreboardAccessor) scoreboard).getServer()).getSchedule());
         }
     }
 }

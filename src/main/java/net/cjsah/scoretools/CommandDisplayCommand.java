@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.cjsah.scoretools.fake.ScoreboardInternalFake;
+import net.cjsah.scoretools.fake.ScoreboardScheduleFake;
 import net.minecraft.command.argument.ScoreboardObjectiveArgumentType;
 import net.minecraft.command.argument.ScoreboardSlotArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -20,13 +20,13 @@ public class CommandDisplayCommand {
                         execute(context, (internal, slot) -> internal.add(slot, ScoreboardObjectiveArgumentType.getObjective(context, "objective"))
                 )))).then(literal("remove").then(argument("objective", ScoreboardObjectiveArgumentType.scoreboardObjective()).executes(context ->
                         execute(context, (internal, slot) -> internal.remove(slot, ScoreboardObjectiveArgumentType.getObjective(context, "objective"))
-                )))).then(literal("internal").then(argument("internal", IntegerArgumentType.integer(1)).executes(context ->
-                        execute(context, (internal, slot) -> internal.setInternal(slot, IntegerArgumentType.getInteger(context, "internal")))
+                )))).then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(context ->
+                        execute(context, (internal, slot) -> internal.setSchedule(slot, IntegerArgumentType.getInteger(context, "schedule")))
                 )))));
     }
 
-    private static int execute(CommandContext<ServerCommandSource> context, BiConsumer<ScoreboardInternal, Integer> consumer) throws CommandSyntaxException {
-        ScoreboardInternal internal = ((ScoreboardInternalFake) context.getSource().getServer()).getInternal();
+    private static int execute(CommandContext<ServerCommandSource> context, BiConsumer<ScoreboardSchedule, Integer> consumer) throws CommandSyntaxException {
+        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).getSchedule();
         int slot = ScoreboardSlotArgumentType.getScoreboardSlot(context, "slot");
         consumer.accept(internal, slot);
         return Command.SINGLE_SUCCESS;

@@ -7,17 +7,19 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.MinecraftServer;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-public class ScoreboardInternal {
-    private final Map<Integer, SlotInternalImpl> internals = new HashMap<>();
+public class ScoreboardSchedule {
+    private final Map<Integer, SlotScheduleImpl> schedules = new HashMap<>();
     private final Scoreboard scoreboard;
 
-    public ScoreboardInternal(MinecraftServer server) {
+    public ScoreboardSchedule(MinecraftServer server) {
         this.scoreboard = server.getScoreboard();
     }
 
@@ -29,7 +31,7 @@ public class ScoreboardInternal {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.remove(objective));
     }
 
-    public void setInternal(int slot, int internal) {
+    private void setInternal(int slot, int internal) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.internal = internal);
     }
 
@@ -37,68 +39,78 @@ public class ScoreboardInternal {
         this.getOrCreateAndExecute(slot, (impl) -> impl.index = index);
     }
 
-    private void setProcess(int slot, int process) {
-        this.getOrCreateAndExecute(slot, (impl) -> impl.tick = process);
+    public void setSchedule(int slot, int process) {
+        this.getOrCreateAndExecute(slot, (impl) -> impl.schedule = process);
     }
 
-    private void getOrCreateAndExecute(int slot, Consumer<SlotInternalImpl> consumer) {
-        SlotInternalImpl impl = this.internals.getOrDefault(slot, this.internals.put(slot, new SlotInternalImpl(this.scoreboard, slot)));
+    @Nullable
+    public SlotScheduleImpl clear(int slot) {
+        SlotScheduleImpl impl = this.schedules.remove(slot);
+        return impl.list.size() > 1 && impl.schedule > 0 ? impl : null;
+    }
+
+    private void getOrCreateAndExecute(int slot, Consumer<SlotScheduleImpl> consumer) {
+        SlotScheduleImpl impl = this.schedules.get(slot);
+        if (impl == null) {
+            impl = new SlotScheduleImpl(this.scoreboard, slot);
+            this.schedules.put(slot, impl);
+        }
         consumer.accept(impl);
     }
 
     public void readNbt(NbtCompound nbt) {
         for(int i = 0; i < 19; ++i) {
-            if (nbt.contains("slot_" + i, 8)) {
+            if (nbt.contains("slot_" + i, 10)) {
                 NbtCompound slot = nbt.getCompound("slot_" + i);
                 NbtList list = slot.getList("contents", 8);
                 for (int j = 0; j < list.size(); j++) {
                     String name = list.getString(j);
-                    ScoreboardObjective objective = this.scoreboard.getNullableObjective(name);
+                    ScoreboardObjective objective = this.scoreboard.getObjective(name);
                     this.add(i, objective);
                 }
+                this.setSchedule(i, slot.getInt("schedule"));
                 this.setInternal(i, slot.getInt("internal"));
-                this.setProcess(i, slot.getInt("process"));
                 this.setIndex(i, slot.getInt("index"));
             }
         }
     }
 
     public void writeNbt(NbtCompound nbt) {
-        this.internals.forEach((index, impl) -> {
+        this.schedules.forEach((index, impl) -> {
             NbtCompound slot = new NbtCompound();
             NbtList list = new NbtList();
             for (ScoreboardObjective objective : impl.list) {
                 list.add(NbtString.of(objective.getName()));
             }
             slot.put("contents", list);
-            slot.putInt("internal", index);
-            slot.putInt("process", impl.tick);
+            slot.putInt("schedule", impl.schedule);
+            slot.putInt("internal", impl.internal);
             slot.putInt("index", impl.index);
             nbt.put("slot_" + index, slot);
         });
     }
 
     public void tick() {
-        this.internals.values().forEach(SlotInternalImpl::tick);
+        this.schedules.values().forEach(SlotScheduleImpl::tick);
     }
 
-    private static class SlotInternalImpl {
+    private static class SlotScheduleImpl {
         final List<ScoreboardObjective> list = new ArrayList<>();
         final Scoreboard scoreboard;
         final int slot;
+        int schedule;
         int internal;
         int index;
-        int tick;
 
-        SlotInternalImpl(Scoreboard scoreboard, int slot) {
+        SlotScheduleImpl(Scoreboard scoreboard, int slot) {
             this.scoreboard = scoreboard;
             this.slot = slot;
         }
 
         void tick() {
-            if (this.internal > 0 && this.list.size() > 1 && ++this.tick == this.internal) {
+            if (this.schedule > 0 && this.list.size() > 1 && ++this.internal >= this.schedule) {
                 this.scoreboard.setObjectiveSlot(this.slot, this.list.get(this.updateIndex()));
-                this.tick = 0;
+                this.internal = 0;
             }
         }
 
@@ -112,7 +124,8 @@ public class ScoreboardInternal {
 
         @Override
         public String toString() {
-            return this.list + ",slot:[" + this.slot + "],internal:[" + this.internal + "],index:[" + this.index + "]";
+            return this.list.stream().map(ScoreboardObjective::getName).collect(Collectors.joining(",", "[", "]")) +
+                    ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "]";
         }
     }
 

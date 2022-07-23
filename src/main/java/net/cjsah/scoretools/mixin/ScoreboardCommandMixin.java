@@ -2,12 +2,17 @@ package net.cjsah.scoretools.mixin;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.cjsah.scoretools.CommandDisplayCommand;
+import net.cjsah.scoretools.fake.ScoreboardScheduleFake;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ScoreboardCommand;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ScoreboardCommand.class)
 public class ScoreboardCommandMixin {
@@ -25,5 +30,15 @@ public class ScoreboardCommandMixin {
         return literal;
     }
 
+    @Inject(method = "executeClearDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;setObjectiveSlot(ILnet/minecraft/scoreboard/ScoreboardObjective;)V"))
+    private static void clearDisplay(ServerCommandSource source, int slot, CallbackInfoReturnable<Integer> cir) {
+        ((ScoreboardScheduleFake)source.getServer()).getSchedule().clear(slot);
+    }
+
+    @Redirect(method = "executeSetDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;getObjectiveForSlot(I)Lnet/minecraft/scoreboard/ScoreboardObjective;"))
+    private static ScoreboardObjective setDisplayPredicate(Scoreboard scoreboard, int slot, ServerCommandSource source) {
+        ScoreboardObjective objective = scoreboard.getObjectiveForSlot(slot);
+        return ((ScoreboardScheduleFake) source.getServer()).getSchedule().clear(slot) == null ? objective : null;
+    }
 
 }
