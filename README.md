@@ -14,7 +14,7 @@ Use `/scoreboard objectives preset <update/run> [name]` to run or update preset 
 {
     "presets":[
         {
-            "name": "dmp",
+            "name": "dmpk",
             "display": "sidebar",
             "schedule": 200,
             "scoreboards": [
