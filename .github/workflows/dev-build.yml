@@ -13,9 +13,22 @@ jobs:
       - name: Show branches
         id: show
         run: |
-
+          FILE="actionflow.branches.zawsxedrftvgbyhnujimko"
+          if test -f $FILE; then
+          rm -f $FILE
+          fi
+          result=$(git branch --list)
+          echo "result" >> $FILE
+          sed -i "s/[* ]//g" $FILE
+          result=$(sed ":a;N;s/\n/,/g;ta" $FILE)
+          rm -f $FILE
+          echo "branches=[$result]" >> $GITHUB_OUTPUT
   build:
     runs-on: ubuntu-latest
+    needs: [ properties ]
+    strategy:
+      matrix:
+        branch: {{ needs.properties.outputs.branches }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
