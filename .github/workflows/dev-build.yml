@@ -20,7 +20,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - name: Publish artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Artifacts for ${{ github.sha }}
           path: build/libs/
