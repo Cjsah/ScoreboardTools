@@ -1,19 +1,12 @@
 package net.cjsah.scbt;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.scbt.config.LoopPreset;
-import net.cjsah.scbt.config.ScoreboardPreset;
-import net.minecraft.command.argument.ScoreboardCriterionArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ScoreboardCommand;
-import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;

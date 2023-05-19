@@ -43,7 +43,7 @@ public class ScbPresetCommand {
         ServerScoreboard scoreboard = context.getSource().getServer().getScoreboard();
         ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).getSchedule();
         LoopPreset preset = ScoreboardPresetArgumentType.getScoreboardPreset(context, "preset");
-        List<ScoreboardPreset> scoreboards = preset.getScoreboards();
+        ScoreboardPreset[] scoreboards = preset.getScoreboards();
         List<ScoreboardObjective> objectives = new ArrayList<>();
         for (ScoreboardPreset scbPreset : scoreboards) {
             String name = scbPreset.getName();

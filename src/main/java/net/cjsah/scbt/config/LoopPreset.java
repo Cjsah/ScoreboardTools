@@ -2,44 +2,44 @@ package net.cjsah.scbt.config;
 
 import com.google.gson.annotations.Expose;
 
-import java.util.List;
+import java.util.Arrays;
 
 public class LoopPreset {
-    @Expose
-    private String name;
-    @Expose private String display;
-    @Expose private int schedule;
-    @Expose private List<ScoreboardPreset> scoreboards;
+    @Expose private final String name;
+    @Expose private final String display;
+    @Expose private final int schedule;
+    @Expose private final ScoreboardPreset[] scoreboards;
+
+    public LoopPreset(String name, String display, int schedule, ScoreboardPreset[] scoreboards) {
+        this.name = name;
+        this.display = display;
+        this.schedule = schedule;
+        this.scoreboards = scoreboards;
+    }
 
     public String getName() {
         return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDisplay() {
         return this.display;
     }
 
-    public void setDisplay(String display) {
-        this.display = display;
-    }
-
     public int getSchedule() {
         return this.schedule;
     }
 
-    public void setSchedule(int schedule) {
-        this.schedule = schedule;
-    }
-
-    public List<ScoreboardPreset> getScoreboards() {
+    public ScoreboardPreset[] getScoreboards() {
         return this.scoreboards;
     }
 
-    public void setScoreboards(List<ScoreboardPreset> scoreboards) {
-        this.scoreboards = scoreboards;
+    @Override
+    public String toString() {
+        return "LoopPreset{" +
+                "name='" + name + '\'' +
+                ", display='" + display + '\'' +
+                ", schedule=" + schedule +
+                ", scoreboards=" + Arrays.toString(scoreboards) +
+                '}';
     }
 }

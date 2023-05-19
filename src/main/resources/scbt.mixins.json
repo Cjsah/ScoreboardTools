@@ -11,6 +11,7 @@
     "ScoreboardCommandMixin",
     "ScoreboardCriterionInvoker",
     "ScoreboardStateMixin",
+    "ServerPlayerEntityMixin",
     "ServerPlayerInteractionManagerMixin",
     "ServerScoreboardAccessor"
   ],

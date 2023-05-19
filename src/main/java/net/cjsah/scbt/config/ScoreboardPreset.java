@@ -3,32 +3,33 @@ package net.cjsah.scbt.config;
 import com.google.gson.annotations.Expose;
 
 public class ScoreboardPreset {
-    @Expose
-    private String name;
-    @Expose private String criteria;
-    @Expose private String text;
+    @Expose private final String name;
+    @Expose private final String criteria;
+    @Expose private final String text;
 
+    public ScoreboardPreset(String name, String criteria, String text) {
+        this.name = name;
+        this.criteria = criteria;
+        this.text = text;
+    }
     public String getName() {
         return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getCriteria() {
         return this.criteria;
     }
 
-    public void setCriteria(String criteria) {
-        this.criteria = criteria;
-    }
-
     public String getText() {
         return this.text;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    @Override
+    public String toString() {
+        return "ScoreboardPreset{" +
+                "name='" + name + '\'' +
+                ", criteria='" + criteria + '\'' +
+                ", text='" + text + '\'' +
+                '}';
     }
 }
