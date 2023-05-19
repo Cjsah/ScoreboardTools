@@ -1,4 +1,4 @@
-package net.cjsah.scoretools.mixin;
+package net.cjsah.scbt.mixin;
 
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,4 +1,4 @@
-package net.cjsah.scoretools.mixin;
+package net.cjsah.scbt.mixin;
 
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;

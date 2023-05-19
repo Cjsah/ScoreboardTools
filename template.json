@@ -1,0 +1,22 @@
+{
+    "name": "dmp",
+    "display": "sidebar",
+    "schedule": 200,
+    "scoreboards": [
+        {
+            "name": "death",
+            "criteria": "deathCount",
+            "text": "[{\"text\":\"[\",\"color\":\"gold\"},{\"text\":\"死亡榜\",\"color\":\"aqua\"},{\"text\":\"]\",\"color\":\"gold\"}]"
+        },
+        {
+            "name": "mined",
+            "criteria": "minedCount",
+            "text": "[{\"text\":\"[\",\"color\":\"gold\"},{\"text\":\"挖掘榜\",\"color\":\"aqua\"},{\"text\":\"]\",\"color\":\"gold\"}]"
+        },
+        {
+            "name": "place",
+            "criteria": "placedCount",
+            "text": "[{\"text\":\"[\",\"color\":\"gold\"},{\"text\":\"放置榜\",\"color\":\"aqua\"},{\"text\":\"]\",\"color\":\"gold\"}]"
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "mined",
+  "id": "scbt",
   "version": "${version}",
 
   "name": "ScoreboardTools",
@@ -13,18 +13,21 @@
     "issues": "https://github.com/Cjsah/ScoreboardTools/issues"
   },
 
-  "license": "GPAL-3.0",
+  "license": "AGPL-3.0",
   "icon": "assets/mined/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.cjsah.scoretools.ScoreboardTools"
+      "net.cjsah.scbt.ScoreboardTools"
     ]
   },
   "mixins": [
     "scoreboard-tools.mixins.json"
   ],
+
+  "accessWidener" : "scbt.accesswidener",
+
   "depends": {
     "fabricloader": ">=0.7.4",
     "minecraft": ">=1.18"

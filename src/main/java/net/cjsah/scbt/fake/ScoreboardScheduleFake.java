@@ -1,6 +1,6 @@
-package net.cjsah.scoretools.fake;
+package net.cjsah.scbt.fake;
 
-import net.cjsah.scoretools.ScoreboardSchedule;
+import net.cjsah.scbt.ScoreboardSchedule;
 
 public interface ScoreboardScheduleFake {
     ScoreboardSchedule getSchedule();

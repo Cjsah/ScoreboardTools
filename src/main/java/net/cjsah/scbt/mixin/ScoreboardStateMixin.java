@@ -1,7 +1,7 @@
-package net.cjsah.scoretools.mixin;
+package net.cjsah.scbt.mixin;
 
-import net.cjsah.scoretools.ScoreboardSchedule;
-import net.cjsah.scoretools.fake.ScoreboardScheduleFake;
+import net.cjsah.scbt.ScoreboardSchedule;
+import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardState;
@@ -37,8 +37,8 @@ public class ScoreboardStateMixin {
     }
 
     private void scheduleExecute(Consumer<ScoreboardSchedule> consumer) {
-        if (this.scoreboard instanceof ServerScoreboard scoreboard) {
-            consumer.accept(((ScoreboardScheduleFake) ((ServerScoreboardAccessor) scoreboard).getServer()).getSchedule());
+        if (this.scoreboard instanceof ServerScoreboard scb) {
+            consumer.accept(((ScoreboardScheduleFake) ((ServerScoreboardAccessor) scb).getServer()).getSchedule());
         }
     }
 }

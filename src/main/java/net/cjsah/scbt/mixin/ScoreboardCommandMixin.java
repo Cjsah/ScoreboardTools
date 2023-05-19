@@ -1,8 +1,9 @@
-package net.cjsah.scoretools.mixin;
+package net.cjsah.scbt.mixin;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.cjsah.scoretools.CommandDisplayCommand;
-import net.cjsah.scoretools.fake.ScoreboardScheduleFake;
+import net.cjsah.scbt.command.ScbLoopDisplayCommand;
+import net.cjsah.scbt.command.ScbPresetCommand;
+import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.command.CommandManager;
@@ -24,21 +25,36 @@ public class ScoreboardCommandMixin {
                     ordinal = 7
             )
     )
-    private static LiteralArgumentBuilder<ServerCommandSource> register(String name) {
+    private static LiteralArgumentBuilder<ServerCommandSource> registerLoop(String name) {
         LiteralArgumentBuilder<ServerCommandSource> literal = CommandManager.literal(name);
-        CommandDisplayCommand.register(literal);
+        ScbLoopDisplayCommand.register(literal);
+        return literal;
+    }
+
+    @Redirect(
+            method = "register",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/command/CommandManager;literal(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;",
+                    ordinal = 1
+            )
+    )
+
+    private static LiteralArgumentBuilder<ServerCommandSource> registerPreset(String name) {
+        LiteralArgumentBuilder<ServerCommandSource> literal = CommandManager.literal(name);
+        ScbPresetCommand.register(literal);
         return literal;
     }
 
     @Inject(method = "executeClearDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;setObjectiveSlot(ILnet/minecraft/scoreboard/ScoreboardObjective;)V"))
     private static void clearDisplay(ServerCommandSource source, int slot, CallbackInfoReturnable<Integer> cir) {
-        ((ScoreboardScheduleFake)source.getServer()).getSchedule().clear(slot);
+        ((ScoreboardScheduleFake)source.getServer()).getSchedule().disable(slot);
     }
 
     @Redirect(method = "executeSetDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;getObjectiveForSlot(I)Lnet/minecraft/scoreboard/ScoreboardObjective;"))
     private static ScoreboardObjective setDisplayPredicate(Scoreboard scoreboard, int slot, ServerCommandSource source) {
         ScoreboardObjective objective = scoreboard.getObjectiveForSlot(slot);
-        return ((ScoreboardScheduleFake) source.getServer()).getSchedule().clear(slot) == null ? objective : null;
+        return ((ScoreboardScheduleFake) source.getServer()).getSchedule().disable(slot) ? null : objective;
     }
 
 }

@@ -1,13 +1,20 @@
-package net.cjsah.scoretools;
+package net.cjsah.scbt;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.cjsah.scbt.config.LoopPreset;
+import net.cjsah.scbt.config.ScoreboardPreset;
+import net.minecraft.command.argument.ScoreboardCriterionArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ScoreboardCommand;
+import net.minecraft.text.Text;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +30,11 @@ public class ScoreboardSchedule {
         this.scoreboard = server.getScoreboard();
     }
 
+    public boolean contains(int slot, ScoreboardObjective objective) {
+        SlotScheduleImpl impl = this.schedules.get(slot);
+        return impl != null && impl.list.contains(objective);
+    }
+
     public void add(int slot, ScoreboardObjective objective) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.add(objective));
     }
@@ -35,6 +47,11 @@ public class ScoreboardSchedule {
         this.getOrCreateAndExecute(slot, (impl) -> impl.internal = internal);
     }
 
+    public void setEnable(int slot, boolean enable) {
+        SlotScheduleImpl impl = this.schedules.get(slot);
+        if (impl != null) impl.enable = enable;
+    }
+
     private void setIndex(int slot, int index) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.index = index);
     }
@@ -43,10 +60,29 @@ public class ScoreboardSchedule {
         this.getOrCreateAndExecute(slot, (impl) -> impl.schedule = process);
     }
 
-    @Nullable
-    public SlotScheduleImpl clear(int slot) {
-        SlotScheduleImpl impl = this.schedules.remove(slot);
-        return impl.list.size() > 1 && impl.schedule > 0 ? impl : null;
+    public void preset(List<ScoreboardObjective> objectives, LoopPreset preset) {
+        int slot = Scoreboard.getDisplaySlotId(preset.getDisplay());
+        SlotScheduleImpl impl = this.schedules.get(slot);
+        if (impl == null) {
+            impl = new SlotScheduleImpl(this.scoreboard, slot);
+            this.schedules.put(slot, impl);
+        }
+        impl.list.clear();
+        impl.list.addAll(objectives);
+        impl.schedule = preset.getSchedule();
+        impl.internal = 0;
+        impl.index = 0;
+        impl.enable = true;
+    }
+
+    public boolean disable(int slot) {
+        SlotScheduleImpl impl = this.schedules.get(slot);
+        if (impl != null) {
+            boolean available = impl.available();
+            impl.enable = false;
+            return available;
+        }
+        return false;
     }
 
     private void getOrCreateAndExecute(int slot, Consumer<SlotScheduleImpl> consumer) {
@@ -71,6 +107,7 @@ public class ScoreboardSchedule {
                 this.setSchedule(i, slot.getInt("schedule"));
                 this.setInternal(i, slot.getInt("internal"));
                 this.setIndex(i, slot.getInt("index"));
+                this.setEnable(i, slot.getBoolean("enable"));
             }
         }
     }
@@ -86,6 +123,7 @@ public class ScoreboardSchedule {
             slot.putInt("schedule", impl.schedule);
             slot.putInt("internal", impl.internal);
             slot.putInt("index", impl.index);
+            slot.putBoolean("enable", impl.enable);
             nbt.put("slot_" + index, slot);
         });
     }
@@ -101,14 +139,20 @@ public class ScoreboardSchedule {
         int schedule;
         int internal;
         int index;
+        boolean enable;
 
         SlotScheduleImpl(Scoreboard scoreboard, int slot) {
             this.scoreboard = scoreboard;
             this.slot = slot;
+            this.enable = true;
+        }
+
+        public boolean available() {
+            return this.enable && this.schedule > 0 && this.list.size() > 1;
         }
 
         void tick() {
-            if (this.schedule > 0 && this.list.size() > 1 && ++this.internal >= this.schedule) {
+            if (this.available() && ++this.internal >= this.schedule) {
                 this.scoreboard.setObjectiveSlot(this.slot, this.list.get(this.updateIndex()));
                 this.internal = 0;
             }
@@ -125,7 +169,7 @@ public class ScoreboardSchedule {
         @Override
         public String toString() {
             return this.list.stream().map(ScoreboardObjective::getName).collect(Collectors.joining(",", "[", "]")) +
-                    ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "]";
+                    ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "],[enable:" + this.enable + "]";
         }
     }
 

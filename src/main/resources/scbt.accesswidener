@@ -1,0 +1,2 @@
+accessWidener	v1	named
+accessible field net/minecraft/server/command/ScoreboardCommand OBJECTIVES_ADD_DUPLICATE_EXCEPTION Lcom/mojang/brigadier/exceptions/SimpleCommandExceptionType;

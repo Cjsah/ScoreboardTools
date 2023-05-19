@@ -1,9 +1,9 @@
-package net.cjsah.scoretools;
+package net.cjsah.scbt.registry;
 
-import net.cjsah.scoretools.mixin.ScoreboardCriterionInvoker;
+import net.cjsah.scbt.mixin.ScoreboardCriterionInvoker;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 
-public class Criterion {
+public class Criterions {
     public static final ScoreboardCriterion MINED_COUNT = create("minedCount");
     public static final ScoreboardCriterion PLACED_COUNT = create("placedCount");
 
