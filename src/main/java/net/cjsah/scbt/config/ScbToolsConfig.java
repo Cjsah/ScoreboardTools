@@ -36,13 +36,15 @@ public final class ScbToolsConfig {
     }
     private final List<LoopPreset> presets = new ArrayList<>();
     private final List<String> presetNames = new ArrayList<>();
+    private boolean carpetPlayerScore = false;
+
 
     private ScbToolsConfig() {}
 
     public static void init() {
         if (!CONFIG_FILE.exists()) {
             try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-                writer.write("{\"presets\":[]}");
+                writer.write("{\"presets\":[],\"carpet_player_score\":false}");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -63,7 +65,7 @@ public final class ScbToolsConfig {
                 if (!name.isEmpty() && this.presetNames.contains(name)) throw new IllegalArgumentException("Duplicate preset name '" + name + "'");
                 else this.presetNames.add(name);
             }
-            System.out.println(this.presets);
+            this.carpetPlayerScore = config.carpetPlayerScore;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -85,8 +87,14 @@ public final class ScbToolsConfig {
         return this.presetNames;
     }
 
+    public boolean isCarpetPlayerScore() {
+        return this.carpetPlayerScore;
+    }
+
     static class Config {
         @Expose private List<LoopPreset> presets;
+        @Expose private boolean carpetPlayerScore;
+
     }
 
 }

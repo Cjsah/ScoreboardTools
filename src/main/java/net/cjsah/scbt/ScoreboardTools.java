@@ -37,7 +37,7 @@ public class ScoreboardTools implements ModInitializer {
         context.getSource().sendFeedback(Text.of(text), false);
     }
 
-    private static boolean notCarpetBot(ServerPlayerEntity player) {
+    public static boolean notCarpetBot(ServerPlayerEntity player) {
         return CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
     }
 
