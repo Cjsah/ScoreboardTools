@@ -35,7 +35,7 @@ Use `/scoreboard objectives preset <update/run> [name]` to run or update preset 
                 },
                 {
                     "name": "killed",
-                    "criteria": "killedCount",
+                    "criteria": "totalKillCount",
                     "text": "[{\"text\":\"[\",\"color\":\"gold\"},{\"text\":\"杀生榜\",\"color\":\"aqua\"},{\"text\":\"]\",\"color\":\"gold\"}]"
                 }
             ]

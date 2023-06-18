@@ -34,7 +34,7 @@ public class ScoreboardTools implements ModInitializer {
     }
 
     public static void feedback(CommandContext<ServerCommandSource> context, String text) {
-        context.getSource().sendFeedback(Text.of(text), false);
+        context.getSource().sendFeedback(() -> Text.of(text), false);
     }
 
     public static boolean notCarpetBot(ServerPlayerEntity player) {

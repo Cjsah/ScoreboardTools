@@ -56,7 +56,7 @@ public class ScbPresetCommand {
             scoreboard.addObjective(name, criteria, text, criteria.getDefaultRenderType());
             ScoreboardObjective objective = scoreboard.getObjective(name);
             objectives.add(objective);
-            context.getSource().sendFeedback(Text.translatable("commands.scoreboard.objectives.add.success", objective.toHoverableText()), true);
+            context.getSource().sendFeedback(() -> Text.translatable("commands.scoreboard.objectives.add.success", objective.toHoverableText()), true);
         }
         internal.preset(objectives, preset);
         feedback(context, "Completed");
