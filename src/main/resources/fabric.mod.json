@@ -15,7 +15,7 @@
 
   "license": "AGPL-3.0",
 
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       "net.cjsah.scbt.ScoreboardTools"
