@@ -48,13 +48,13 @@ public class ScoreboardCommandMixin {
 
     @Inject(method = "executeClearDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;setObjectiveSlot(ILnet/minecraft/scoreboard/ScoreboardObjective;)V"))
     private static void clearDisplay(ServerCommandSource source, int slot, CallbackInfoReturnable<Integer> cir) {
-        ((ScoreboardScheduleFake)source.getServer()).getSchedule().disable(slot);
+        ((ScoreboardScheduleFake)source.getServer()).scbt$getSchedule().disable(slot);
     }
 
     @Redirect(method = "executeSetDisplay", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Scoreboard;getObjectiveForSlot(I)Lnet/minecraft/scoreboard/ScoreboardObjective;"))
     private static ScoreboardObjective setDisplayPredicate(Scoreboard scoreboard, int slot, ServerCommandSource source) {
         ScoreboardObjective objective = scoreboard.getObjectiveForSlot(slot);
-        return ((ScoreboardScheduleFake) source.getServer()).getSchedule().disable(slot) ? null : objective;
+        return ((ScoreboardScheduleFake) source.getServer()).scbt$getSchedule().disable(slot) ? null : objective;
     }
 
 }

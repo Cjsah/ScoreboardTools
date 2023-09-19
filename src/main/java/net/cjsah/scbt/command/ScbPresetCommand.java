@@ -1,11 +1,11 @@
 package net.cjsah.scbt.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.scbt.ScoreboardSchedule;
-import net.cjsah.scbt.command.argument.ScoreboardPresetArgumentType;
 import net.cjsah.scbt.config.LoopPreset;
 import net.cjsah.scbt.config.ScbToolsConfig;
 import net.cjsah.scbt.config.ScoreboardPreset;
@@ -29,7 +29,7 @@ public class ScbPresetCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> node) {
         node.then(literal("preset")
-                .then(literal("run").then(argument("preset", ScoreboardPresetArgumentType.scoreboardPreset()).executes(ScbPresetCommand::executePreset)))
+                .then(literal("run").then(argument("preset", StringArgumentType.greedyString()).executes(ScbPresetCommand::executePreset)))
                 .then(literal("update").executes(ScbPresetCommand::update)));
     }
 
@@ -41,8 +41,9 @@ public class ScbPresetCommand {
 
     private static int executePreset(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerScoreboard scoreboard = context.getSource().getServer().getScoreboard();
-        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).getSchedule();
-        LoopPreset preset = ScoreboardPresetArgumentType.getScoreboardPreset(context, "preset");
+        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).scbt$getSchedule();
+        String presetName = StringArgumentType.getString(context, "preset");
+        LoopPreset preset = ScbToolsConfig.getInstance().getPreset(presetName);
         ScoreboardPreset[] scoreboards = preset.getScoreboards();
         List<ScoreboardObjective> objectives = new ArrayList<>();
         for (ScoreboardPreset scbPreset : scoreboards) {

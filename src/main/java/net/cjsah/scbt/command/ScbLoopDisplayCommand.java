@@ -69,7 +69,7 @@ public class ScbLoopDisplayCommand {
     }
 
     private static int execute(CommandContext<ServerCommandSource> context, BiConsumer<ScoreboardSchedule, Integer> consumer) throws CommandSyntaxException {
-        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).getSchedule();
+        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).scbt$getSchedule();
         int slot = ScoreboardSlotArgumentType.getScoreboardSlot(context, "slot");
         consumer.accept(internal, slot);
         return Command.SINGLE_SUCCESS;

@@ -5,16 +5,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.cjsah.scbt.ScoreboardTools;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class ScbToolsConfig {
@@ -34,21 +31,20 @@ public final class ScbToolsConfig {
     public static ScbToolsConfig getInstance() {
         return INSTANCE;
     }
-    private final List<LoopPreset> presets = new ArrayList<>();
-    private final List<String> presetNames = new ArrayList<>();
-    private boolean carpetPlayerScore = false;
+    private Config config;
 
-
-    private ScbToolsConfig() {}
-
-    public static void init() {
+    private ScbToolsConfig() {
         if (!CONFIG_FILE.exists()) {
             try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
                 writer.write("{\"presets\":[],\"carpet_player_score\":false}");
             } catch (IOException e) {
-                e.printStackTrace();
+                ScoreboardTools.LOGGER.error("Failed to create config file", e);
             }
         }
+        this.config = new Config() {{
+            this.presets = Collections.emptyList();
+            this.carpetPlayerScore = false;
+        }};
     }
 
     public void update() {
@@ -56,23 +52,14 @@ public final class ScbToolsConfig {
                 FileInputStream fis = new FileInputStream(CONFIG_FILE);
                 InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8)
         ) {
-            Config config = GSON.fromJson(isr, Config.class);
-            this.presets.clear();
-            this.presetNames.clear();
-            this.presets.addAll(config.presets);
-            for (LoopPreset preset : this.presets) {
-                String name = preset.getName();
-                if (!name.isEmpty() && this.presetNames.contains(name)) throw new IllegalArgumentException("Duplicate preset name '" + name + "'");
-                else this.presetNames.add(name);
-            }
-            this.carpetPlayerScore = config.carpetPlayerScore;
+            this.config = GSON.fromJson(isr, Config.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            ScoreboardTools.LOGGER.error("Failed to load config file", e);
         }
     }
 
     public LoopPreset getPreset(String name) throws CommandSyntaxException {
-        List<LoopPreset> list = this.presets.stream().filter(preset -> name.equals(preset.getName())).toList();
+        List<LoopPreset> list = this.config.presets.stream().filter(preset -> name.equals(preset.getName())).toList();
         int size = list.size();
         switch (size) {
             case 0 -> throw NO_PRESET_EXCEPTION.create(name);
@@ -83,17 +70,13 @@ public final class ScbToolsConfig {
         }
     }
 
-    public List<String> getPresetsNames() {
-        return this.presetNames;
-    }
-
     public boolean isCarpetPlayerScore() {
-        return this.carpetPlayerScore;
+        return this.config.carpetPlayerScore;
     }
 
     static class Config {
-        @Expose private List<LoopPreset> presets;
-        @Expose private boolean carpetPlayerScore;
+        @Expose protected List<LoopPreset> presets;
+        @Expose protected boolean carpetPlayerScore;
 
     }
 

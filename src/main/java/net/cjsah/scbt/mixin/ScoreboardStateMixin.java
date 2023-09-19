@@ -9,6 +9,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -36,9 +37,10 @@ public class ScoreboardStateMixin {
         });
     }
 
+    @Unique
     private void scheduleExecute(Consumer<ScoreboardSchedule> consumer) {
         if (this.scoreboard instanceof ServerScoreboard scb) {
-            consumer.accept(((ScoreboardScheduleFake) ((ServerScoreboardAccessor) scb).getServer()).getSchedule());
+            consumer.accept(((ScoreboardScheduleFake) ((ServerScoreboardAccessor) scb).getServer()).scbt$getSchedule());
         }
     }
 }
