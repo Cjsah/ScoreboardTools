@@ -6,10 +6,9 @@
   "mixins": [
     "BlockItemMixin",
     "BucketItemMixin",
+    "CommandRegisterMixin",
     "FlintAndSteelItemMixin",
     "MinecraftServerMixin",
-    "ScoreboardCommandMixin",
-    "ScoreboardCriterionInvoker",
     "ScoreboardStateMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayerInteractionManagerMixin",

@@ -1,8 +1,10 @@
 package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.ScoreboardSchedule;
+import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardState;
 import net.minecraft.scoreboard.ServerScoreboard;
@@ -22,19 +24,15 @@ public class ScoreboardStateMixin {
     @Shadow @Final private Scoreboard scoreboard;
 
     @Inject(method = "readNbt", at = @At("RETURN"))
-    private void read(NbtCompound nbt, CallbackInfoReturnable<ScoreboardState> cir) {
-        if (nbt.contains("DisplayInternal")) {
-            this.scheduleExecute((internal) -> internal.readNbt(nbt.getCompound("DisplayInternal")));
-        }
+    private void read(NbtCompound nbt, RegistryWrapper.WrapperLookup registries, CallbackInfoReturnable<ScoreboardState> cir) {
+        ScoreboardTools.readNbt(this.scoreboard, nbt);
+        this.scheduleExecute((internal) -> internal.readNbt(nbt));
     }
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void write(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
-        this.scheduleExecute((internal) -> {
-            NbtCompound compound = new NbtCompound();
-            internal.writeNbt(compound);
-            if (!compound.isEmpty()) nbt.put("DisplayInternal", compound);
-        });
+    private void write(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfoReturnable<NbtCompound> cir) {
+        ScoreboardTools.writeNbt(nbt);
+        this.scheduleExecute((internal) -> internal.writeNbt(nbt));
     }
 
     @Unique

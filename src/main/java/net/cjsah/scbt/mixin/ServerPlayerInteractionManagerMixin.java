@@ -1,6 +1,5 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.registry.Criterions;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
@@ -27,6 +26,6 @@ public class ServerPlayerInteractionManagerMixin {
             )
     )
     private void onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        ScoreboardTools.addScore(this.player, Criterions.MINED_COUNT);
+        ScoreboardTools.addScore(this.player, ScoreboardTools.MinedObjectives);
     }
 }

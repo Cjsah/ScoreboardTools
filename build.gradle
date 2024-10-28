@@ -1,9 +1,6 @@
 plugins {
-	id 'fabric-loom' version '1.2-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 }
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = mod_name
 version = "${mod_version}-mc${mc_version}"
@@ -13,10 +10,17 @@ if (build_number != 'undefined') {
 	version += "+build.${build_number}"
 }
 
+loom {
+	mods {
+		"scbt" {
+			sourceSet sourceSets.main
+		}
+	}
+	accessWidenerPath = file("src/main/resources/scbt.accesswidener")
+}
+
 repositories {
-//	maven {
-//		url 'https://masa.dy.fi/maven'
-//	}
+
 }
 
 dependencies {
@@ -36,18 +40,14 @@ processResources {
 	}
 }
 
-loom {
-	accessWidenerPath = file("src/main/resources/scbt.accesswidener")
-}
-
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {

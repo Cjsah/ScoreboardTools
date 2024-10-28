@@ -1,11 +1,9 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.registry.Criterions;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
@@ -24,6 +22,6 @@ public class BucketItemMixin {
             )
     )
     private void placedBlock(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        ScoreboardTools.addScore((ServerPlayerEntity) user, Criterions.PLACED_COUNT);
+        ScoreboardTools.addScore(user, ScoreboardTools.PlacedObjectives);
     }
 }

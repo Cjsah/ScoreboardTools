@@ -1,10 +1,8 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.registry.Criterions;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +19,6 @@ public class BlockItemMixin {
             )
     )
     private void placedBlock(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir) {
-        ScoreboardTools.addScore((ServerPlayerEntity) context.getPlayer(), Criterions.PLACED_COUNT);
+        ScoreboardTools.addScore(context.getPlayer(), ScoreboardTools.PlacedObjectives);
     }
 }
