@@ -76,12 +76,13 @@ public class ScoreboardSchedule {
     }
 
     public void readNbt(NbtCompound nbt) {
+        System.out.println("read");
         NbtCompound internal = nbt.getCompound("DisplayInternal");
         if (internal.isEmpty()) return;
         for (String key : internal.getKeys()) {
             ScoreboardDisplaySlot slot = ScoreboardDisplaySlot.CODEC.byId(key);
             if (slot != null) {
-                NbtCompound compound = nbt.getCompound(key);
+                NbtCompound compound = internal .getCompound(key);
                 List<ScoreboardObjective> objectives = compound
                         .getList("contents", NbtElement.STRING_TYPE)
                         .stream()
@@ -92,8 +93,10 @@ public class ScoreboardSchedule {
                 this.setInternal(slot, compound.getInt("internal"));
                 this.setIndex(slot, compound.getInt("index"));
                 this.setEnable(slot, compound.getBoolean("enable"));
+                System.out.println(this.schedules);
             }
         }
+        System.out.println("===");
     }
 
     public void writeNbt(NbtCompound nbt) {
