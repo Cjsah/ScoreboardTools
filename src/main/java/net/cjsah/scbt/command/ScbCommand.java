@@ -15,6 +15,7 @@ import net.minecraft.command.argument.ScoreboardSlotArgumentType;
 import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
 
@@ -37,7 +38,7 @@ public class ScbCommand {
                         .then(literal("enable").executes(ScbCommand::enable))
                         .then(literal("disable").executes(ScbCommand::disable))
                 ))
-                .then(literal("fakePlayerScore").then(argument("enable", BoolArgumentType.bool()).executes(ScbCommand::changeFakePlayerScore)))
+                .then(literal("fakePlayerScore").executes(ScbCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScbCommand::changeFakePlayerScore)))
         );
 
     }
@@ -113,6 +114,11 @@ public class ScbCommand {
 
     private static int changeFakePlayerScore(CommandContext<ServerCommandSource> context) {
         ScoreboardTools.FakePlayerScore = BoolArgumentType.getBool(context, "enable");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int showFakePlayerScore(CommandContext<ServerCommandSource> context) {
+        context.getSource().sendFeedback(() -> Text.literal("FakePlayerScore: " + (ScoreboardTools.FakePlayerScore ? "enabled" : "disabled")), false);
         return Command.SINGLE_SUCCESS;
     }
 

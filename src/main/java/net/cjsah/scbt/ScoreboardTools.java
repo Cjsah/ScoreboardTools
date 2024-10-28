@@ -74,7 +74,7 @@ public class ScoreboardTools implements ModInitializer {
     }
 
     public static boolean carpetBotScore(PlayerEntity player) {
-        return !FakePlayerScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
+        return FakePlayerScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
     }
 
     static {
