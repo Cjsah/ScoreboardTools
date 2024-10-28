@@ -2,6 +2,7 @@ package net.cjsah.scbt.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -36,6 +37,7 @@ public class ScbCommand {
                         .then(literal("enable").executes(ScbCommand::enable))
                         .then(literal("disable").executes(ScbCommand::disable))
                 ))
+                .then(literal("fakePlayerScore").then(argument("enable", BoolArgumentType.bool()).executes(ScbCommand::changeFakePlayerScore)))
         );
 
     }
@@ -106,6 +108,11 @@ public class ScbCommand {
         ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).scbt$getSchedule();
         ScoreboardDisplaySlot slot = ScoreboardSlotArgumentType.getScoreboardSlot(context, "slot");
         consumer.accept(internal, slot);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int changeFakePlayerScore(CommandContext<ServerCommandSource> context) {
+        ScoreboardTools.FakePlayerScore = BoolArgumentType.getBool(context, "enable");
         return Command.SINGLE_SUCCESS;
     }
 
