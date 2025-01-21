@@ -58,14 +58,6 @@ public class ScoreboardSchedule {
         this.getOrCreateAndExecute(slot, (impl) -> impl.schedule = process);
     }
 
-    public boolean disable(ScoreboardDisplaySlot slot) {
-        SlotScheduleImpl impl = this.schedules.get(slot);
-        if (impl == null) return false;
-        boolean available = impl.available();
-        impl.enable = false;
-        return available;
-    }
-
     private void getOrCreateAndExecute(ScoreboardDisplaySlot slot, Consumer<SlotScheduleImpl> consumer) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         if (impl == null) {

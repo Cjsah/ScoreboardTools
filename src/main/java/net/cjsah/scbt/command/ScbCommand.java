@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
 import java.util.function.Consumer;
 
 import static net.cjsah.scbt.ScoreboardTools.MinedObjectives;
+import static net.cjsah.scbt.ScoreboardTools.OnlineObjectives;
 import static net.cjsah.scbt.ScoreboardTools.PlacedObjectives;
 import static net.cjsah.scbt.ScoreboardTools.feedback;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -47,6 +48,7 @@ public class ScbCommand {
         LiteralArgumentBuilder<ServerCommandSource> bind = literal("bind");
         appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::add);
         appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::add);
+        appendCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::add);
         return bind;
     }
 
@@ -54,6 +56,7 @@ public class ScbCommand {
         LiteralArgumentBuilder<ServerCommandSource> bind = literal("unbind");
         appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::remove);
         appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::remove);
+        appendCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::remove);
         return bind;
     }
 

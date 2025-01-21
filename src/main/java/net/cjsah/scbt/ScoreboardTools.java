@@ -13,6 +13,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,10 +22,12 @@ public class ScoreboardTools implements ModInitializer {
 
     public static final String MINED_COUNT = "minedCount";
     public static final String PLACED_COUNT = "placedCount";
+    public static final String ONLINE_TIME = "onlineTime";
 
     public static boolean FakePlayerScore = true;
     public static final Set<ScoreboardObjective> MinedObjectives = new HashSet<>();
     public static final Set<ScoreboardObjective> PlacedObjectives = new HashSet<>();
+    public static final Set<ScoreboardObjective> OnlineObjectives = new HashSet<>();
 
     @Override
     public void onInitialize() {
@@ -42,31 +45,35 @@ public class ScoreboardTools implements ModInitializer {
         NbtCompound bind = nbt.getCompound("ScoreboardBind");
         MinedObjectives.clear();
         PlacedObjectives.clear();
+        OnlineObjectives.clear();
         if (bind.isEmpty()) return;
-        for (NbtElement name : bind.getList(MINED_COUNT, NbtElement.STRING_TYPE)) {
-            ScoreboardObjective objective = scoreboard.getNullableObjective(name.asString());
-            if (objective != null) MinedObjectives.add(objective);
-        }
-        for (NbtElement name : bind.getList(PLACED_COUNT, NbtElement.STRING_TYPE)) {
-            ScoreboardObjective objective = scoreboard.getNullableObjective(name.asString());
-            if (objective != null) PlacedObjectives.add(objective);
-        }
+        readObjectives(bind, scoreboard, MINED_COUNT, MinedObjectives);
+        readObjectives(bind, scoreboard, PLACED_COUNT, PlacedObjectives);
+        readObjectives(bind, scoreboard, ONLINE_TIME, OnlineObjectives);
     }
 
     public static void writeNbt(NbtCompound nbt) {
         NbtCompound compound = new NbtCompound();
-        NbtList list = new NbtList();
-        for (ScoreboardObjective objective : MinedObjectives) {
-            list.add(NbtString.of(objective.getName()));
-        }
-        compound.put(MINED_COUNT, list);
-        list = new NbtList();
-        for (ScoreboardObjective objective : PlacedObjectives) {
-            list.add(NbtString.of(objective.getName()));
-        }
-        compound.put(PLACED_COUNT, list);
+        writeObjectives(compound, MINED_COUNT, MinedObjectives);
+        writeObjectives(compound, PLACED_COUNT, PlacedObjectives);
+        writeObjectives(compound, ONLINE_TIME, OnlineObjectives);
         nbt.put("ScoreboardBind", compound);
         nbt.putBoolean("FakePlayerScore", FakePlayerScore);
+    }
+
+    private static void readObjectives(NbtCompound nbt, Scoreboard scoreboard, String key, Collection<ScoreboardObjective> objectives) {
+        for (NbtElement name : nbt.getList(key, NbtElement.STRING_TYPE)) {
+            ScoreboardObjective objective = scoreboard.getNullableObjective(name.asString());
+            if (objective != null) objectives.add(objective);
+        }
+    }
+
+    private static void writeObjectives(NbtCompound nbt, String key, Collection<ScoreboardObjective> objectives) {
+        NbtList list = new NbtList();
+        for (ScoreboardObjective objective : objectives) {
+            list.add(NbtString.of(objective.getName()));
+        }
+        nbt.put(key, list);
     }
 
     public static void feedback(CommandContext<ServerCommandSource> context, String text) {
