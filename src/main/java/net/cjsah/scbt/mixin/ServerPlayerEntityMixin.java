@@ -5,19 +5,26 @@ import net.minecraft.scoreboard.ScoreAccess;
 import net.minecraft.scoreboard.ScoreHolder;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.stat.ServerStatHandler;
+import net.minecraft.stat.Stats;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static net.cjsah.scbt.ScoreboardTools.carpetBotScore;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
+    @Shadow @Final private ServerStatHandler statHandler;
 
     @Redirect(
             method = "onDeath",
@@ -34,6 +41,28 @@ public class ServerPlayerEntityMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
-        ScoreboardTools.addScore((ServerPlayerEntity) (Object) this, ScoreboardTools.OnlineObjectives);
+        Set<ScoreboardObjective> objectives = ScoreboardTools.OnlineObjectives.keySet();
+        for (ScoreboardObjective objective : objectives) {
+            int totalTime = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.TOTAL_WORLD_TIME));
+            switch (ScoreboardTools.OnlineObjectives.get(objective)) {
+                case TICK -> ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, totalTime);
+                case SECOND -> {
+                    int time = totalTime / 20;
+                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                }
+                case MINUTE -> {
+                    int time = totalTime / 1200;
+                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                }
+                case HOUR -> {
+                    int time = totalTime / 72000;
+                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                }
+                case DAY -> {
+                    int time = totalTime / 1728000;
+                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                }
+            }
+        }
     }
 }
