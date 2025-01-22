@@ -2,11 +2,15 @@ package net.cjsah.scbt.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.cjsah.scbt.OnlineTimeRecoreType;
 import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
@@ -48,7 +52,7 @@ public class ScbCommand {
         LiteralArgumentBuilder<ServerCommandSource> bind = literal("bind");
         appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::add);
         appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::add);
-        appendCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::add);
+        appendOnlineTimeCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::put);
         return bind;
     }
 
@@ -66,6 +70,24 @@ public class ScbCommand {
             execute.accept(objective);
             return Command.SINGLE_SUCCESS;
         })));
+    }
+
+    private static void appendOnlineTimeCriterion(
+        LiteralArgumentBuilder<ServerCommandSource> literal,
+        String name,
+        BiConsumer<ScoreboardObjective, OnlineTimeRecoreType> execute
+    ) {
+        RequiredArgumentBuilder<ServerCommandSource, String> node =
+            argument("name", ScoreboardObjectiveArgumentType.scoreboardObjective());
+        for (OnlineTimeRecoreType type : OnlineTimeRecoreType.values()) {
+            node.then(literal(type.name()).executes(context -> {
+                ScoreboardObjective objective = ScoreboardObjectiveArgumentType.getObjective(context, "name");
+
+                execute.accept(objective, type);
+                return Command.SINGLE_SUCCESS;
+            }));
+        }
+        literal.then(literal(name).then(node));
     }
 
     private static int add(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
