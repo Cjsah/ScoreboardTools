@@ -12,6 +12,7 @@ import net.minecraft.stat.Stats;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -25,6 +26,8 @@ import static net.cjsah.scbt.ScoreboardTools.carpetBotScore;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
     @Shadow @Final private ServerStatHandler statHandler;
+
+    private final ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
     @Redirect(
             method = "onDeath",
@@ -41,26 +44,53 @@ public class ServerPlayerEntityMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
+        scbt$updateOnlineScoreboard();
+        scbt$updateLevelScoreboard();
+        scbt$updateElytraFlyingDistanceScoreboard();
+    }
+
+    @Unique
+    private void scbt$updateLevelScoreboard() {
+        ScoreboardTools.setScore(player, ScoreboardTools.LevelObjectives, player.experienceLevel);
+    }
+
+    @Unique
+    private void scbt$updateElytraFlyingDistanceScoreboard() {
+        Set<ScoreboardObjective> objectives = ScoreboardTools.ElytraFlyingDistanceObjectives.keySet();
+        for (ScoreboardObjective objective : objectives) {
+            int distance = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.FLY_ONE_CM));
+            int aviate = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.AVIATE_ONE_CM));
+
+            int total = distance + aviate;
+            switch (ScoreboardTools.ElytraFlyingDistanceObjectives.get(objective)) {
+                case METRE -> ScoreboardTools.setScore(player, objectives, total / 100);
+                case KILO_METRE -> ScoreboardTools.setScore(player, objectives, total / 100000);
+            }
+        }
+    }
+
+    @Unique
+    private void scbt$updateOnlineScoreboard() {
         Set<ScoreboardObjective> objectives = ScoreboardTools.OnlineObjectives.keySet();
         for (ScoreboardObjective objective : objectives) {
             int totalTime = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.TOTAL_WORLD_TIME));
             switch (ScoreboardTools.OnlineObjectives.get(objective)) {
-                case TICK -> ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, totalTime);
+                case TICK -> ScoreboardTools.setScore(player, objectives, totalTime);
                 case SECOND -> {
                     int time = totalTime / 20;
-                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                    ScoreboardTools.setScore(player, objectives, time);
                 }
                 case MINUTE -> {
                     int time = totalTime / 1200;
-                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                    ScoreboardTools.setScore(player, objectives, time);
                 }
                 case HOUR -> {
                     int time = totalTime / 72000;
-                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                    ScoreboardTools.setScore(player, objectives, time);
                 }
                 case DAY -> {
                     int time = totalTime / 1728000;
-                    ScoreboardTools.setScore((ServerPlayerEntity) (Object) this, objectives, time);
+                    ScoreboardTools.setScore(player, objectives, time);
                 }
             }
         }

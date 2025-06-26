@@ -1,6 +1,8 @@
 package net.cjsah.scbt;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -24,11 +26,15 @@ public class ScoreboardTools implements ModInitializer {
     public static final String MINED_COUNT = "minedCount";
     public static final String PLACED_COUNT = "placedCount";
     public static final String ONLINE_TIME = "onlineTime";
+    public static final String LEVEL_BOARD = "level";
+    public static final String ELYTRA_FLYING_DISTANCE = "elytraFlyingDistance";
 
     public static boolean FakePlayerScore = true;
     public static final Set<ScoreboardObjective> MinedObjectives = new HashSet<>();
     public static final Set<ScoreboardObjective> PlacedObjectives = new HashSet<>();
-    public static final HashMap<ScoreboardObjective, OnlineTimeRecoreType> OnlineObjectives = new HashMap<>();
+    public static final HashMap<ScoreboardObjective, OnlineTimeRecordType> OnlineObjectives = new HashMap<>();
+    public static final HashMap<ScoreboardObjective, ElytraFlyingDistanceRecordType> ElytraFlyingDistanceObjectives = new HashMap<>();
+    public static final HashSet<ScoreboardObjective> LevelObjectives = new HashSet<>();
 
     @Override
     public void onInitialize() {
@@ -54,30 +60,38 @@ public class ScoreboardTools implements ModInitializer {
         MinedObjectives.clear();
         PlacedObjectives.clear();
         OnlineObjectives.clear();
+        LevelObjectives.clear();
         if (bind.isEmpty()) return;
         readObjectives(bind, scoreboard, MINED_COUNT, MinedObjectives);
         readObjectives(bind, scoreboard, PLACED_COUNT, PlacedObjectives);
-        readOnlineTimeObjectives(bind, scoreboard);
+        readObjectives(bind, scoreboard, LEVEL_BOARD, LevelObjectives);
+        readMapObjectives(bind, scoreboard, ONLINE_TIME, OnlineObjectives, OnlineTimeRecordType.values());
+        readMapObjectives(bind, scoreboard, ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives, ElytraFlyingDistanceRecordType.values());
     }
 
     public static void writeNbt(NbtCompound nbt) {
         NbtCompound compound = new NbtCompound();
         writeObjectives(compound, MINED_COUNT, MinedObjectives);
         writeObjectives(compound, PLACED_COUNT, PlacedObjectives);
-        writeOnlineTimeObjectives(compound);
+        writeObjectives(compound, LEVEL_BOARD, LevelObjectives);
+        writeMapObjectives(compound, ONLINE_TIME, OnlineObjectives);
+        writeMapObjectives(compound, ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives);
         nbt.put("ScoreboardBind", compound);
         nbt.putBoolean("FakePlayerScore", FakePlayerScore);
     }
 
-    private static void readOnlineTimeObjectives(
+    private static <T> void readMapObjectives(
         NbtCompound nbt,
-        Scoreboard scoreboard
+        Scoreboard scoreboard,
+        String key,
+        HashMap<ScoreboardObjective, T> map,
+        T[] values
     ) {
-        NbtCompound compound = nbt.getCompound(ONLINE_TIME);
+        NbtCompound compound = nbt.getCompound(key);
         for (String name : compound.getKeys()) {
             ScoreboardObjective objective = scoreboard.getNullableObjective(name);
             if (objective != null) {
-                ScoreboardTools.OnlineObjectives.put(objective, OnlineTimeRecoreType.values()[compound.getInt(name)]);
+                map.put(objective, values[compound.getInt(name)]);
             }
         }
     }
@@ -89,14 +103,16 @@ public class ScoreboardTools implements ModInitializer {
         }
     }
 
-    private static void writeOnlineTimeObjectives(
-        NbtCompound nbt
+    private static <T extends Enum<T>> void writeMapObjectives(
+        NbtCompound nbt,
+        String key,
+        HashMap<ScoreboardObjective, T> map
     ) {
         NbtCompound compound = new NbtCompound();
-        for (ScoreboardObjective objective : ScoreboardTools.OnlineObjectives.keySet()) {
-            compound.putInt(objective.getName(), ScoreboardTools.OnlineObjectives.get(objective).ordinal());
+        for (ScoreboardObjective objective : map.keySet()) {
+            compound.putInt(objective.getName(), map.get(objective).ordinal());
         }
-        nbt.put(ONLINE_TIME, compound);
+        nbt.put(key, compound);
     }
 
     private static void writeObjectives(NbtCompound nbt, String key, Collection<ScoreboardObjective> objectives) {

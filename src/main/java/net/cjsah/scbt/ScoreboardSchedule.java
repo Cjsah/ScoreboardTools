@@ -38,7 +38,7 @@ public class ScoreboardSchedule {
     }
 
     public void remove(ScoreboardDisplaySlot slot, ScoreboardObjective objective) {
-        this.getOrCreateAndExecute(slot, (impl) -> impl.list.remove(objective));
+        this.getOrCreateAndExecute(slot, (impl) -> impl.remove(objective));
     }
 
     private void setInternal(ScoreboardDisplaySlot slot, int internal) {
@@ -68,7 +68,6 @@ public class ScoreboardSchedule {
     }
 
     public void readNbt(NbtCompound nbt) {
-        System.out.println("read");
         NbtCompound internal = nbt.getCompound("DisplayInternal");
         if (internal.isEmpty()) return;
         for (String key : internal.getKeys()) {
@@ -85,10 +84,8 @@ public class ScoreboardSchedule {
                 this.setInternal(slot, compound.getInt("internal"));
                 this.setIndex(slot, compound.getInt("index"));
                 this.setEnable(slot, compound.getBoolean("enable"));
-                System.out.println(this.schedules);
             }
         }
-        System.out.println("===");
     }
 
     public void writeNbt(NbtCompound nbt) {
@@ -126,6 +123,17 @@ public class ScoreboardSchedule {
             this.scoreboard = scoreboard;
             this.slot = slot;
             this.enable = true;
+        }
+
+        public void remove(ScoreboardObjective objective) {
+            this.list.remove(objective);
+            if (this.list.size() == 1) {
+                String name = this.list.getFirst().getName();
+                String currentScore = this.scoreboard.getObjectiveForSlot(this.slot).getName();
+                if (!currentScore.equals(name)) {
+                    this.scoreboard.setObjectiveSlot(this.slot, this.list.getFirst());
+                }
+            }
         }
 
         public boolean available() {

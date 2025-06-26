@@ -2,15 +2,14 @@ package net.cjsah.scbt.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.cjsah.scbt.OnlineTimeRecoreType;
+import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
@@ -23,10 +22,7 @@ import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
 
-import static net.cjsah.scbt.ScoreboardTools.MinedObjectives;
-import static net.cjsah.scbt.ScoreboardTools.OnlineObjectives;
-import static net.cjsah.scbt.ScoreboardTools.PlacedObjectives;
-import static net.cjsah.scbt.ScoreboardTools.feedback;
+import static net.cjsah.scbt.ScoreboardTools.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -52,7 +48,9 @@ public class ScbCommand {
         LiteralArgumentBuilder<ServerCommandSource> bind = literal("bind");
         appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::add);
         appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::add);
-        appendOnlineTimeCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::put);
+        appendMapCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::put, OnlineTimeRecordType.class);
+        appendCriterion(bind, ScoreboardTools.LEVEL_BOARD, LevelObjectives::add);
+        appendMapCriterion(bind, ScoreboardTools.ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives::put, ElytraFlyingDistanceRecordType.class);
         return bind;
     }
 
@@ -61,6 +59,8 @@ public class ScbCommand {
         appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::remove);
         appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::remove);
         appendCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::remove);
+        appendCriterion(bind, ScoreboardTools.LEVEL_BOARD, LevelObjectives::remove);
+        appendCriterion(bind, ScoreboardTools.ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives::remove);
         return bind;
     }
 
@@ -72,17 +72,17 @@ public class ScbCommand {
         })));
     }
 
-    private static void appendOnlineTimeCriterion(
+    private static <T extends Enum<T>> void appendMapCriterion(
         LiteralArgumentBuilder<ServerCommandSource> literal,
         String name,
-        BiConsumer<ScoreboardObjective, OnlineTimeRecoreType> execute
+        BiConsumer<ScoreboardObjective, T> execute,
+        Class<T> clazz
     ) {
         RequiredArgumentBuilder<ServerCommandSource, String> node =
             argument("name", ScoreboardObjectiveArgumentType.scoreboardObjective());
-        for (OnlineTimeRecoreType type : OnlineTimeRecoreType.values()) {
+        for (T type : clazz.getEnumConstants()) {
             node.then(literal(type.name()).executes(context -> {
                 ScoreboardObjective objective = ScoreboardObjectiveArgumentType.getObjective(context, "name");
-
                 execute.accept(objective, type);
                 return Command.SINGLE_SUCCESS;
             }));
@@ -151,5 +151,4 @@ public class ScbCommand {
     private interface BiConsumer<T, R> {
         void accept(T t, R r) throws CommandSyntaxException;
     }
-
 }
