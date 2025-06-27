@@ -20,10 +20,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - name: Get version
-        id: get_version
-        run: echo "version=$(< build/tmp/version)" >> $GITHUB_OUTPUT
+        id: version
+        run: |
+          version=$(< build/tmp/version)
+          main_version=`echo $version | cut -d '-' -f1`
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "main_version=$main_version" >> $GITHUB_OUTPUT
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts for ${{ steps.get_version.outputs.version }}
+          name: Artifacts for ${{ steps.version.outputs.version }} ${{ steps.version.outputs.main_version }}
           path: build/libs/

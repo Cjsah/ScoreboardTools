@@ -23,7 +23,11 @@ jobs:
         run: ./gradlew build
       - name: Get version
         id: version
-        run: echo "version=$(< build/tmp/version)" >> $GITHUB_OUTPUT
+        run: |
+          version=$(< build/tmp/version)
+          main_version=`echo $version | cut -d '-' -f1`
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "main_version=$main_version" >> $GITHUB_OUTPUT
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -38,7 +42,7 @@ jobs:
         uses: Kir-Antipov/mc-publish@v3.3
         continue-on-error: true
         with:
-          name: "ScoreboardTools"
+          name: "ScoreboardTools v${{ steps.version.outputs.version }}"
           version: ${{ steps.version.outputs.version }}
           game-versions: 1.21.4
           version-type: release
