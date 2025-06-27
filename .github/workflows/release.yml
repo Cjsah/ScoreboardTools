@@ -42,7 +42,7 @@ jobs:
         uses: Kir-Antipov/mc-publish@v3.3
         continue-on-error: true
         with:
-          name: "ScoreboardTools v${{ steps.version.outputs.version }}"
+          name: "ScoreboardTools v${{ steps.version.outputs.main_version }}"
           version: ${{ steps.version.outputs.version }}
           game-versions: 1.21.4
           version-type: release
