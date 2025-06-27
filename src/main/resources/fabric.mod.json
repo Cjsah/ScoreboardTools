@@ -4,9 +4,10 @@
   "version": "${version}",
 
   "name": "ScoreboardTools",
-  "description": "Added some scoreboard criterion and some tools",
+  "description": "Added some scoreboard criterion and tools",
   "authors": [
-    "Cjsah"
+    "Cjsah",
+    "SkyDynamic"
   ],
   "contact": {
     "sources": "https://github.com/Cjsah/ScoreboardTools",
@@ -29,7 +30,7 @@
 
   "depends": {
     "fabricloader": ">=0.7.4",
-    "minecraft": ">=1.21"
+    "minecraft": ">=1.21.4"
   },
   "suggests": {
     "another-mod": "*"
