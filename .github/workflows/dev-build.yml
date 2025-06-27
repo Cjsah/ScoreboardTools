@@ -19,8 +19,11 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
+      - name: Get version
+        id: get_version
+        run: echo "version=$(< build/tmp/version)" >> $GITHUB_OUTPUT
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts for ${{ github.sha }}
+          name: Artifacts for ${{ steps.get_version.outputs.version }}
           path: build/libs/
