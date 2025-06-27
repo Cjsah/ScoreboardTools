@@ -59,10 +59,3 @@ jar {
 		rename { "${it}_${mod_name}"}
 	}
 }
-
-tasks.register('genVersionFile') {
-	file("$DEFAULT_BUILD_DIR_NAME/tmp").mkdirs()
-	file("$DEFAULT_BUILD_DIR_NAME/tmp/version").text = version
-}
-
-build.finalizedBy('genVersionFile')

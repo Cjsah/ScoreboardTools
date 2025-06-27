@@ -21,30 +21,39 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
+      - name: Read gradle properties
+        id: properties_v
+        uses: christian-draeger/read-properties@1.1.1
+        with:
+          path: gradle.properties
+          properties: 'platform'
       - name: Get version
         id: version
         run: |
-          version=$(< build/tmp/version)
-          main_version=`echo $version | cut -d '-' -f1`
+          main_version=${{ steps.properties_v.outputs.mod_version }}
+          mc_version=${{ steps.properties_v.outputs.mc_version }}
+          version=$main_version-$mc_version+build.$GITHUB_RUN_NUMBER
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "main_version=$main_version" >> $GITHUB_OUTPUT
+          echo "mc_version=$mc_version" >> $GITHUB_OUTPUT
+          echo "support_mc_versions=${{ steps.properties_v.outputs.support_mc_versions }}" >> $GITHUB_OUTPUT
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Artifacts for ${{ steps.version.outputs.version }}
           path: build/libs/
-      - name: Upload Release Jar
+      - name: Upload release jar
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |
             build/libs/ScoreboardTools-${{ steps.version.outputs.version }}.jar
-      - name: publish mod
+      - name: Publish mod
         uses: Kir-Antipov/mc-publish@v3.3
         continue-on-error: true
         with:
           name: "ScoreboardTools v${{ steps.version.outputs.main_version }}"
           version: ${{ steps.version.outputs.version }}
-          game-versions: 1.21.4
+          game-versions: ${{ steps.version.outputs.support_mc_versions }}
           version-type: release
           java: 21
           fail-mode: skip
