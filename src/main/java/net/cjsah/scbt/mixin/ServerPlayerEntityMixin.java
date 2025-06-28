@@ -1,6 +1,7 @@
 package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.scoreboard.ScoreAccess;
 import net.minecraft.scoreboard.ScoreHolder;
@@ -20,24 +21,26 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static net.cjsah.scbt.ScoreboardTools.carpetBotScore;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
-    @Shadow @Final private ServerStatHandler statHandler;
-
+    @Shadow
+    @Final
+    private ServerStatHandler statHandler;
     @Unique
     private final ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+    @Unique
+    private int lastExpLevel = 0;
 
     @Redirect(
-            method = "onDeath",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/scoreboard/Scoreboard;forEachScore(Lnet/minecraft/scoreboard/ScoreboardCriterion;Lnet/minecraft/scoreboard/ScoreHolder;Ljava/util/function/Consumer;)V"
-            )
+        method = "onDeath",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/scoreboard/Scoreboard;forEachScore(Lnet/minecraft/scoreboard/ScoreboardCriterion;Lnet/minecraft/scoreboard/ScoreHolder;Ljava/util/function/Consumer;)V"
+        )
     )
     public void die(Scoreboard instance, ScoreboardCriterion criterion, ScoreHolder scoreHolder, Consumer<ScoreAccess> action) {
         if (carpetBotScore((ServerPlayerEntity) (Object) this)) {
@@ -54,7 +57,10 @@ public class ServerPlayerEntityMixin {
 
     @Unique
     private void scbt$updateLevelScoreboard() {
-        ScoreboardTools.setScore(player, ScoreboardTools.LevelObjectives, player.experienceLevel);
+        if (player.experienceLevel != this.lastExpLevel) {
+            this.lastExpLevel = player.experienceLevel;
+            ScoreboardTools.setScore(player, ScoreboardTools.LevelObjectives, player.experienceLevel);
+        }
     }
 
     @Unique
@@ -73,28 +79,17 @@ public class ServerPlayerEntityMixin {
 
     @Unique
     private void scbt$updateOnlineScoreboard() {
-        Set<ScoreboardObjective> objectives = ScoreboardTools.OnlineObjectives.keySet();
-        for (ScoreboardObjective objective : objectives) {
+        for (Map.Entry<ScoreboardObjective, OnlineTimeRecordType> entry : ScoreboardTools.OnlineObjectives.entrySet()) {
+            ScoreboardObjective objective = entry.getKey();
             int totalTime = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.TOTAL_WORLD_TIME));
-            switch (ScoreboardTools.OnlineObjectives.get(objective)) {
-                case TICK -> ScoreboardTools.setScore(player, objectives, totalTime);
-                case SECOND -> {
-                    int time = totalTime / 20;
-                    ScoreboardTools.setScore(player, objectives, time);
-                }
-                case MINUTE -> {
-                    int time = totalTime / 1200;
-                    ScoreboardTools.setScore(player, objectives, time);
-                }
-                case HOUR -> {
-                    int time = totalTime / 72000;
-                    ScoreboardTools.setScore(player, objectives, time);
-                }
-                case DAY -> {
-                    int time = totalTime / 1728000;
-                    ScoreboardTools.setScore(player, objectives, time);
-                }
-            }
+            int interval = switch (entry.getValue()) {
+                case TICK -> 1;
+                case SECOND -> 20;
+                case MINUTE -> 1200;
+                case HOUR -> 72000;
+                case DAY -> 1728000;
+            };
+            ScoreboardTools.setScore(player, objective, totalTime / interval);
         }
     }
 }
