@@ -15,10 +15,6 @@ jobs:
           distribution: 'zulu'
       - name: Set build number
         run: sed -i "s/undefined/$GITHUB_RUN_NUMBER/g" gradle.properties
-#      - name: Grant execute permission
-#        run: chmod +x gradlew
-#      - name: Build with Gradle
-#        run: ./gradlew build
       - name: Read gradle properties
         id: properties_v
         uses: christian-draeger/read-properties@1.1.1
@@ -27,22 +23,13 @@ jobs:
           properties: mod_version mc_version support_mc_versions
       - name: Get version
         id: version
-        run: |
-          main_version=${{ steps.properties_v.outputs.mod_version }}
-          mc_version=${{ steps.properties_v.outputs.mc_version }}
-          version=$main_version+build.$GITHUB_RUN_NUMBER
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "main_version=$main_version" >> $GITHUB_OUTPUT
-          echo "mc_version=$mc_version" >> $GITHUB_OUTPUT
-          echo "support_mc_versions=${{ steps.properties_v.outputs.support_mc_versions }}" >> $GITHUB_OUTPUT
-      - name: Tmp test
-        run: |
-          echo ${{ steps.version.outputs.version }}
-          echo ${{ steps.version.outputs.main_version }}
-          echo ${{ steps.version.outputs.mc_version }}
-          echo ${{ steps.version.outputs.support_mc_versions }}
-#      - name: Publish artifacts
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: Artifacts for ${{ steps.version.outputs.version }}
-#          path: build/libs/
+        run: echo "version=${{ steps.properties_v.outputs.mod_version }}+build.$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts for ${{ steps.version.outputs.version }}
+          path: build/libs/
