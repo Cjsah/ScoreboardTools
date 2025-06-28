@@ -15,16 +15,16 @@ jobs:
           distribution: 'zulu'
       - name: Set build number
         run: sed -i "s/undefined/$GITHUB_RUN_NUMBER/g" gradle.properties
-      - name: Grant execute permission
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew build
+#      - name: Grant execute permission
+#        run: chmod +x gradlew
+#      - name: Build with Gradle
+#        run: ./gradlew build
       - name: Read gradle properties
         id: properties_v
         uses: christian-draeger/read-properties@1.1.1
         with:
           path: gradle.properties
-          properties: 'platform'
+          properties: mod_version mc_version support_mc_versions
       - name: Get version
         id: version
         run: |
@@ -41,8 +41,8 @@ jobs:
           echo ${{ steps.version.outputs.main_version }}
           echo ${{ steps.version.outputs.mc_version }}
           echo ${{ steps.version.outputs.support_mc_versions }}
-      - name: Publish artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts for ${{ steps.version.outputs.version }}
-          path: build/libs/
+#      - name: Publish artifacts
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: Artifacts for ${{ steps.version.outputs.version }}
+#          path: build/libs/
