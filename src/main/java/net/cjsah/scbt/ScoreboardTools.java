@@ -18,6 +18,7 @@ import net.minecraft.text.Text;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ScoreboardTools implements ModInitializer {
@@ -32,9 +33,9 @@ public class ScoreboardTools implements ModInitializer {
     public static boolean FakePlayerScore = true;
     public static final Set<ScoreboardObjective> MinedObjectives = new HashSet<>();
     public static final Set<ScoreboardObjective> PlacedObjectives = new HashSet<>();
-    public static final HashMap<ScoreboardObjective, OnlineTimeRecordType> OnlineObjectives = new HashMap<>();
-    public static final HashMap<ScoreboardObjective, ElytraFlyingDistanceRecordType> ElytraFlyingDistanceObjectives = new HashMap<>();
-    public static final HashSet<ScoreboardObjective> LevelObjectives = new HashSet<>();
+    public static final Set<ScoreboardObjective> LevelObjectives = new HashSet<>();
+    public static final Map<ScoreboardObjective, OnlineTimeRecordType> OnlineObjectives = new HashMap<>();
+    public static final Map<ScoreboardObjective, ElytraFlyingDistanceRecordType> ElytraFlyingDistanceObjectives = new HashMap<>();
 
     @Override
     public void onInitialize() {
@@ -64,10 +65,6 @@ public class ScoreboardTools implements ModInitializer {
     public static void readNbt(Scoreboard scoreboard, NbtCompound nbt) {
         FakePlayerScore = !nbt.contains("FakePlayerScore") || nbt.getBoolean("FakePlayerScore");
         NbtCompound bind = nbt.getCompound("ScoreboardBind");
-        MinedObjectives.clear();
-        PlacedObjectives.clear();
-        OnlineObjectives.clear();
-        LevelObjectives.clear();
         if (bind.isEmpty()) return;
         readObjectives(bind, scoreboard, MINED_COUNT, MinedObjectives);
         readObjectives(bind, scoreboard, PLACED_COUNT, PlacedObjectives);
@@ -87,13 +84,8 @@ public class ScoreboardTools implements ModInitializer {
         nbt.putBoolean("FakePlayerScore", FakePlayerScore);
     }
 
-    private static <T> void readMapObjectives(
-        NbtCompound nbt,
-        Scoreboard scoreboard,
-        String key,
-        HashMap<ScoreboardObjective, T> map,
-        T[] values
-    ) {
+    private static <T> void readMapObjectives(NbtCompound nbt, Scoreboard scoreboard, String key, Map<ScoreboardObjective, T> map, T[] values) {
+        map.clear();
         NbtCompound compound = nbt.getCompound(key);
         for (String name : compound.getKeys()) {
             ScoreboardObjective objective = scoreboard.getNullableObjective(name);
@@ -104,17 +96,14 @@ public class ScoreboardTools implements ModInitializer {
     }
 
     private static void readObjectives(NbtCompound nbt, Scoreboard scoreboard, String key, Collection<ScoreboardObjective> objectives) {
+        objectives.clear();
         for (NbtElement name : nbt.getList(key, NbtElement.STRING_TYPE)) {
             ScoreboardObjective objective = scoreboard.getNullableObjective(name.asString());
             if (objective != null) objectives.add(objective);
         }
     }
 
-    private static <T extends Enum<T>> void writeMapObjectives(
-        NbtCompound nbt,
-        String key,
-        HashMap<ScoreboardObjective, T> map
-    ) {
+    private static <T extends Enum<T>> void writeMapObjectives(NbtCompound nbt, String key, Map<ScoreboardObjective, T> map) {
         NbtCompound compound = new NbtCompound();
         for (ScoreboardObjective objective : map.keySet()) {
             compound.putInt(objective.getName(), map.get(objective).ordinal());

@@ -3,7 +3,7 @@ plugins {
 }
 
 archivesBaseName = mod_name
-version = "${mod_version}-mc${mc_version}"
+version = mod_version
 group = project.maven_group
 
 if (build_number != 'undefined') {
@@ -12,7 +12,7 @@ if (build_number != 'undefined') {
 
 loom {
 	mods {
-		"scbt" {
+		"scoreboard-tools" {
 			sourceSet sourceSets.main
 		}
 	}
@@ -37,10 +37,15 @@ dependencies {
 }
 
 processResources {
-	inputs.property "version", mod_version
+	var replaceProperties = [
+			"version"      		: mod_version,
+			"support_mc_version": support_mc_versions,
+	]
+
+	inputs.properties replaceProperties
 
 	filesMatching("fabric.mod.json") {
-		expand "version": mod_version
+		expand replaceProperties
 	}
 }
 

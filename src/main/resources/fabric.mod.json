@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "scbt",
+  "id": "scoreboard-tools",
   "version": "${version}",
 
   "name": "ScoreboardTools",
@@ -14,7 +14,7 @@
     "issues": "https://github.com/Cjsah/ScoreboardTools/issues"
   },
 
-  "license": "AGPL-3.0",
+  "license": "Apache-2.0",
 
   "environment": "*",
   "entrypoints": {
@@ -29,8 +29,7 @@
   "accessWidener" : "scbt.accesswidener",
 
   "depends": {
-    "fabricloader": ">=0.7.4",
-    "minecraft": ">=1.21"
+    "minecraft": "${support_mc_version}"
   },
   "suggests": {
     "another-mod": "*"
