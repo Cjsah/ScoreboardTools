@@ -32,7 +32,7 @@ jobs:
         run: |
           main_version=${{ steps.properties_v.outputs.mod_version }}
           mc_version=${{ steps.properties_v.outputs.mc_version }}
-          version=$main_version-$mc_version+build.$GITHUB_RUN_NUMBER
+          version=$main_version+build.$GITHUB_RUN_NUMBER
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "main_version=$main_version" >> $GITHUB_OUTPUT
           echo "mc_version=$mc_version" >> $GITHUB_OUTPUT

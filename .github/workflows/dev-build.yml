@@ -19,11 +19,17 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
+      - name: Read gradle properties
+        id: properties_v
+        uses: christian-draeger/read-properties@1.1.1
+        with:
+          path: gradle.properties
+          properties: 'platform'
       - name: Get version
         id: version
         run: |
-          version=$(< build/tmp/version)
-          main_version=`echo $version | cut -d '-' -f1`
+          main_version=${{ steps.properties_v.outputs.mod_version }}
+          version=$main_version+build.$GITHUB_RUN_NUMBER
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "main_version=$main_version" >> $GITHUB_OUTPUT
       - name: Publish artifacts
