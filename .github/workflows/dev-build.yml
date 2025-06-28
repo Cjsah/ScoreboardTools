@@ -25,15 +25,10 @@ jobs:
         with:
           path: gradle.properties
           properties: 'platform'
-      - name: Get version
-        id: version
-        run: |
-          main_version=${{ steps.properties_v.outputs.mod_version }}
-          version=$main_version+build.$GITHUB_RUN_NUMBER
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "main_version=$main_version" >> $GITHUB_OUTPUT
+      - name: Tmp test
+        run: echo ${{ steps.properties_v.outputs }}
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts for ${{ steps.version.outputs.version }}
+          name: Artifacts for ${{ steps.properties_v.outputs.mod_version }}+build.$GITHUB_RUN_NUMBER
           path: build/libs/
