@@ -54,6 +54,13 @@ public class ScoreboardTools implements ModInitializer {
         objectives.forEach(it -> scoreboard.getOrCreateScore(player, it, true).setScore(score));
     }
 
+    @SuppressWarnings("DataFlowIssue")
+    public static void setScore(PlayerEntity player, ScoreboardObjective objective, int score) {
+        if (!carpetBotScore(player)) return;
+        ServerScoreboard scoreboard = player.getServer().getScoreboard();
+        scoreboard.getOrCreateScore(player, objective, true).setScore(score);
+    }
+
     public static void readNbt(Scoreboard scoreboard, NbtCompound nbt) {
         FakePlayerScore = !nbt.contains("FakePlayerScore") || nbt.getBoolean("FakePlayerScore");
         NbtCompound bind = nbt.getCompound("ScoreboardBind");
@@ -121,6 +128,10 @@ public class ScoreboardTools implements ModInitializer {
             list.add(NbtString.of(objective.getName()));
         }
         nbt.put(key, list);
+    }
+
+    public static void feedbackCompleted(CommandContext<ServerCommandSource> context) {
+        feedback(context, "Completed");
     }
 
     public static void feedback(CommandContext<ServerCommandSource> context, String text) {

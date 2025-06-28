@@ -1,5 +1,6 @@
 package net.cjsah.scbt.mixin;
 
+import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.scoreboard.ScoreAccess;
 import net.minecraft.scoreboard.ScoreHolder;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -27,6 +29,7 @@ import static net.cjsah.scbt.ScoreboardTools.carpetBotScore;
 public class ServerPlayerEntityMixin {
     @Shadow @Final private ServerStatHandler statHandler;
 
+    @Unique
     private final ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
     @Redirect(
@@ -56,15 +59,14 @@ public class ServerPlayerEntityMixin {
 
     @Unique
     private void scbt$updateElytraFlyingDistanceScoreboard() {
-        Set<ScoreboardObjective> objectives = ScoreboardTools.ElytraFlyingDistanceObjectives.keySet();
-        for (ScoreboardObjective objective : objectives) {
+        for (Map.Entry<ScoreboardObjective, ElytraFlyingDistanceRecordType> entry : ScoreboardTools.ElytraFlyingDistanceObjectives.entrySet()) {
+            ScoreboardObjective objective = entry.getKey();
             int distance = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.FLY_ONE_CM));
             int aviate = this.statHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.AVIATE_ONE_CM));
-
             int total = distance + aviate;
-            switch (ScoreboardTools.ElytraFlyingDistanceObjectives.get(objective)) {
-                case METRE -> ScoreboardTools.setScore(player, objectives, total / 100);
-                case KILO_METRE -> ScoreboardTools.setScore(player, objectives, total / 100000);
+            switch (entry.getValue()) {
+                case METRE -> ScoreboardTools.setScore(player, objective, total / 100);
+                case KILO_METRE -> ScoreboardTools.setScore(player, objective, total / 100000);
             }
         }
     }

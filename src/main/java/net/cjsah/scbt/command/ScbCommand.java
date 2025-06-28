@@ -68,6 +68,7 @@ public class ScbCommand {
         literal.then(literal(name).then(argument("name", ScoreboardObjectiveArgumentType.scoreboardObjective()).executes(context -> {
             ScoreboardObjective objective = ScoreboardObjectiveArgumentType.getObjective(context, "name");
             execute.accept(objective);
+            feedbackCompleted(context);
             return Command.SINGLE_SUCCESS;
         })));
     }
@@ -84,6 +85,7 @@ public class ScbCommand {
             node.then(literal(type.name()).executes(context -> {
                 ScoreboardObjective objective = ScoreboardObjectiveArgumentType.getObjective(context, "name");
                 execute.accept(objective, type);
+                feedbackCompleted(context);
                 return Command.SINGLE_SUCCESS;
             }));
         }
@@ -95,9 +97,10 @@ public class ScbCommand {
             ScoreboardObjective scoreboard = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
             if (!internal.contains(slot, scoreboard)) {
                 internal.add(slot, scoreboard);
+                feedbackCompleted(context);
+            } else {
                 feedback(context, "Existed Scoreboard Objective");
             }
-            feedback(context, "Completed");
         });
     }
 
@@ -105,28 +108,28 @@ public class ScbCommand {
         return executeInternal(context, (internal, slot) -> {
             ScoreboardObjective scoreboard = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
             if (internal.contains(slot, scoreboard)) internal.remove(slot, scoreboard);
-            feedback(context, "Completed");
+            feedbackCompleted(context);
         });
     }
 
     private static int schedule(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         return executeInternal(context, (internal, slot) -> {
             internal.setSchedule(slot, IntegerArgumentType.getInteger(context, "schedule"));
-            feedback(context, "Completed");
+            feedbackCompleted(context);
         });
     }
 
     private static int enable(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         return executeInternal(context, (internal, slot) -> {
             internal.setEnable(slot, true);
-            feedback(context, "Completed");
+            feedbackCompleted(context);
         });
     }
 
     private static int disable(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         return executeInternal(context, (internal, slot) -> {
             internal.setEnable(slot, false);
-            feedback(context, "Completed");
+            feedbackCompleted(context);
         });
     }
 
