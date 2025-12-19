@@ -1,21 +1,31 @@
 {
   "schemaVersion": 1,
-  "id": "scoreboard-tools",
-  "version": "${version}",
+  "id": "${mod_id}",
+  "version": "${mod_version}",
 
-  "name": "ScoreboardTools",
-  "description": "Added some scoreboard criterion and tools",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
   "authors": [
-    "Cjsah",
-    "SkyDynamic"
+    {
+      "name": "Cjsah",
+      "contact": {
+        "homepage": "https://github.com/cjsah"
+      }
+    },
+    {
+      "name": "SkyDynamic",
+      "contact": {
+        "homepage": "https://github.com/SkyDynamic"
+      }
+    }
+
   ],
   "contact": {
-    "sources": "https://github.com/Cjsah/ScoreboardTools",
-    "issues": "https://github.com/Cjsah/ScoreboardTools/issues"
+    "homepage": "${mod_homepage}",
+    "issues": "${mod_sources}/issues",
+    "sources": "${mod_sources}"
   },
-
-  "license": "Apache-2.0",
-
+  "license": "${mod_license}",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -25,13 +35,8 @@
   "mixins": [
     "scbt.mixins.json"
   ],
-
   "accessWidener" : "scbt.accesswidener",
-
   "depends": {
     "minecraft": "${support_mc_version}"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

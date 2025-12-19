@@ -1,66 +1,150 @@
+import com.replaymod.gradle.preprocess.Node
+
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id("dev.architectury.loom").version("${architectury_loom_version}").apply(false)
+	id("org.ajoberstar.grgit").version("${grgit_version}")
+	id("com.replaymod.preprocess").version("${preprocessor_version}")
+	id("me.fallenbreath.yamlang").version("${yamlang_version}").apply(false)
 }
 
-archivesBaseName = mod_name
-version = mod_version
-group = project.maven_group
+preprocess {
+	Node mc12101_fabric = createNode("1.21.1-fabric", 1_21_01, "mojang")
+	Node mc12104_fabric = createNode("1.21.4-fabric", 1_21_01, "mojang")
+	Node mc12110_fabric = createNode("1.21.10-fabric", 1_21_10, "mojang")
 
-if (build_number != 'undefined') {
-	version += "+build.${build_number}"
+	mc12101_fabric.link(mc12104_fabric, null)
+	mc12104_fabric.link(mc12110_fabric, null)
 }
 
-loom {
-	mods {
-		"scoreboard-tools" {
-			sourceSet sourceSets.main
+ext {
+	Map env = System.getenv()
+	File localPropsFile = file("${rootDir}/local.properties")
+
+	if (localPropsFile.exists()) {
+		Properties p = new Properties()
+		p.load(new FileInputStream(localPropsFile))
+		p.each { key, value ->
+			ext[key as String] = value
 		}
 	}
-	accessWidenerPath = file("src/main/resources/scbt.accesswidener")
-}
 
-repositories {
-	maven {
-		url 'https://masa.dy.fi/maven'
+	getEnv = {
+		return env
+	}
+
+	getOrDefault = { String key, String defaultValue ->
+		String value
+		(value = project.findProperty(key)) && !value.isEmpty() ? value : defaultValue
+	}
+
+	isGithubCI = {
+		return env.get("GITHUB_ACTION") != null
+	}
+
+	isJitpack = {
+		return env.get("JITPACK") != null
+	}
+
+	getBuildNumber = {
+		return env.GITHUB_RUN_NUMBER ? env.GITHUB_RUN_NUMBER : 0
+	}
+
+	getVersionGit = { List paths ->
+		if (grgit == null || grgit.head() == null) {
+			return "nogit"
+		}
+
+		List latestCommits = paths.isEmpty() ? grgit.log(maxCommits: 1) : grgit.log(paths: paths, maxCommits: 1)
+		return latestCommits.isEmpty() ? "uncommited" : "${latestCommits.get(0).id.substring(0, 7)}"
+	}
+
+	getVersionType = {
+		String type = getOrDefault("ow.build.environment.buildType", null)
+
+		if (type != null) {
+			return type
+		}
+
+		if (isJitpack()) {
+			return "jitpack"
+		}
+
+		type = env.BUILD_TYPE
+
+		switch (type) {
+			case "RELEASE":
+				return "stable"
+			case "BETA":
+				return "beta"
+			case "PULL_REQUEST":
+				return "pull_request"
+			default:
+				return "dev"
+		}
+	}
+
+	getVersionPatch = { List paths ->
+		if (grgit == null || grgit.head() == null) {
+			return 0
+		}
+
+		List latestCommits = paths.isEmpty() ? grgit.log() : grgit.log(paths: paths)
+		return latestCommits.size()
+	}
+
+	getVersion = { Project proj ->
+		return "${proj.property("mod.version")}.${getVersionPatch(proj == rootProject ? [] : [proj.projectDir.name])}"
+	}
+
+	getVersionWithCommitHash = { Project proj ->
+		return "${getVersion(proj)}+${getVersionGit(proj == rootProject ? [] : [proj.projectDir.name])}-${getVersionType()}"
+	}
+
+	getModVersion = { Project proj ->
+		return "${getVersion(proj)}-${getVersionType()}"
+	}
+
+	getMavenArtifactVersion = { Project proj ->
+		return project.getVersionType() == "stable" ? "${getVersion(proj)}" : "${getModVersion(proj)}"
 	}
 }
 
-dependencies {
-	minecraft "com.mojang:minecraft:${mc_version}"
-	mappings "net.fabricmc:yarn:${mc_version}+build.${yarn_version}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${fapi_version}+${mc_version}"
+tasks.register("genLocalProperties") {
+	it.group("${project.property("mod.id")}")
 
-//	modImplementation "carpet:fabric-carpet:1.21-1.4.147+v240613"
-	// Nullable修复
-	modImplementation "com.google.code.findbugs:jsr305:3.0.2"
-}
+	doFirst {
+		File localPropsFile = file("${rootDir}/local.properties")
 
-processResources {
-	var replaceProperties = [
-			"version"      		: mod_version,
-			"support_mc_version": support_mc_versions,
-	]
+		if (localPropsFile.exists()) {
+			throw new IllegalStateException("local.properties file already generated. If you want to regenerate it, please delete it manually first")
+		} else {
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(localPropsFile))
+			bufferedWriter.writeLine("# Secrets")
+			bufferedWriter.writeLine("secrets.gpg.signingKey=")
+			bufferedWriter.writeLine("secrets.gpg.signingPassword=")
+			bufferedWriter.writeLine("secrets.mavenCentral.username=")
+			bufferedWriter.writeLine("secrets.mavenCentral.password=")
+			bufferedWriter.writeLine("")
+			bufferedWriter.writeLine("# Overwritten configurations")
+			bufferedWriter.writeLine("ow.build.environment.local=")
+			bufferedWriter.writeLine("ow.build.environment.buildType=")
+			bufferedWriter.writeLine("ow.game.window.width=")
+			bufferedWriter.writeLine("ow.game.window.height=")
+			bufferedWriter.writeLine("ow.game.window.username=")
+			bufferedWriter.close()
 
-	inputs.properties replaceProperties
-
-	filesMatching("fabric.mod.json") {
-		expand replaceProperties
+			project.getLogger().info("local.properties generated successfully!")
+		}
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
+tasks.register("cleanPreprocessSources") {
+	it.group("${project.mod_id}")
 
-java {
-	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${mod_name}"}
+	doFirst {
+		subprojects {
+			def path = project.projectDir.toPath().resolve("build/preprocessed")
+			path.toFile().deleteDir()
+		}
 	}
 }
