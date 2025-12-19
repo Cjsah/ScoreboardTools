@@ -2,7 +2,6 @@ package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +10,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+//#if MC >= 12104
+//$$ import net.minecraft.world.InteractionResult;
+//#else
+import net.minecraft.world.InteractionResultHolder;
+//#endif
+
 
 @Mixin(BucketItem.class)
 public class BucketItemMixin {
@@ -21,7 +27,13 @@ public class BucketItemMixin {
                     target = "Lnet/minecraft/advancements/critereon/ItemUsedOnLocationTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)V"
             )
     )
-    private void placedBlock(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+    private void placedBlock(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<
+        //#if MC >= 12104
+        //$$ InteractionResult
+        //#else
+        InteractionResultHolder<ItemStack>
+        //#endif
+        > cir) {
         ScoreboardTools.addScore(player, ScoreboardTools.PlacedObjectives);
     }
 }

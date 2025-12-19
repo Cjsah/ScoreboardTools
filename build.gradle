@@ -9,7 +9,7 @@ plugins {
 
 preprocess {
 	Node mc12101_fabric = createNode("1.21.1-fabric", 1_21_01, "mojang")
-	Node mc12104_fabric = createNode("1.21.4-fabric", 1_21_01, "mojang")
+	Node mc12104_fabric = createNode("1.21.4-fabric", 1_21_04, "mojang")
 	Node mc12110_fabric = createNode("1.21.10-fabric", 1_21_10, "mojang")
 
 	mc12101_fabric.link(mc12104_fabric, null)
