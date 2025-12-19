@@ -1,11 +1,12 @@
 package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.ScoreboardTools;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BucketItem;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,10 +18,10 @@ public class BucketItemMixin {
             method = "use",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/advancement/criterion/ItemCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V"
+                    target = "Lnet/minecraft/advancements/critereon/ItemUsedOnLocationTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)V"
             )
     )
-    private void placedBlock(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        ScoreboardTools.addScore(user, ScoreboardTools.PlacedObjectives);
+    private void placedBlock(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+        ScoreboardTools.addScore(player, ScoreboardTools.PlacedObjectives);
     }
 }

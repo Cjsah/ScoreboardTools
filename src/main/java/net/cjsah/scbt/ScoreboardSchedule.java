@@ -1,13 +1,13 @@
 package net.cjsah.scbt;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardDisplaySlot;
-import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,48 +17,48 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ScoreboardSchedule {
-    private final Map<ScoreboardDisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
+    private final Map<DisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
     private final Scoreboard scoreboard;
 
     public ScoreboardSchedule(MinecraftServer server) {
         this.scoreboard = server.getScoreboard();
     }
 
-    public boolean contains(ScoreboardDisplaySlot slot, ScoreboardObjective objective) {
+    public boolean contains(DisplaySlot slot, Objective objective) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         return impl != null && impl.list.contains(objective);
     }
 
-    public void add(ScoreboardDisplaySlot slot, ScoreboardObjective objective) {
+    public void add(DisplaySlot slot, Objective objective) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.add(objective));
     }
 
-    public void addAll(ScoreboardDisplaySlot slot, List<ScoreboardObjective> objectives) {
+    public void addAll(DisplaySlot slot, List<Objective> objectives) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.addAll(objectives));
     }
 
-    public void remove(ScoreboardDisplaySlot slot, ScoreboardObjective objective) {
+    public void remove(DisplaySlot slot, Objective objective) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.remove(objective));
     }
 
-    private void setInternal(ScoreboardDisplaySlot slot, int internal) {
+    private void setInternal(DisplaySlot slot, int internal) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.internal = internal);
     }
 
-    public void setEnable(ScoreboardDisplaySlot slot, boolean enable) {
+    public void setEnable(DisplaySlot slot, boolean enable) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         if (impl != null) impl.enable = enable;
     }
 
-    private void setIndex(ScoreboardDisplaySlot slot, int index) {
+    private void setIndex(DisplaySlot slot, int index) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.index = index);
     }
 
-    public void setSchedule(ScoreboardDisplaySlot slot, int process) {
+    public void setSchedule(DisplaySlot slot, int process) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.schedule = process);
     }
 
-    private void getOrCreateAndExecute(ScoreboardDisplaySlot slot, Consumer<SlotScheduleImpl> consumer) {
+    private void getOrCreateAndExecute(DisplaySlot slot, Consumer<SlotScheduleImpl> consumer) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         if (impl == null) {
             impl = new SlotScheduleImpl(this.scoreboard, slot);
@@ -67,17 +67,17 @@ public class ScoreboardSchedule {
         consumer.accept(impl);
     }
 
-    public void readNbt(NbtCompound nbt) {
-        NbtCompound internal = nbt.getCompound("DisplayInternal");
+    public void readNbt(CompoundTag nbt) {
+        CompoundTag internal = nbt.getCompound("DisplayInternal");
         if (internal.isEmpty()) return;
-        for (String key : internal.getKeys()) {
-            ScoreboardDisplaySlot slot = ScoreboardDisplaySlot.CODEC.byId(key);
+        for (String key : internal.getAllKeys()) {
+            DisplaySlot slot = DisplaySlot.CODEC.byName(key);
             if (slot != null) {
-                NbtCompound compound = internal .getCompound(key);
-                List<ScoreboardObjective> objectives = compound
-                        .getList("contents", NbtElement.STRING_TYPE)
+                CompoundTag compound = internal .getCompound(key);
+                List<Objective> objectives = compound
+                        .getList("contents", Tag.TAG_STRING)
                         .stream()
-                        .map(it -> this.scoreboard.getNullableObjective(it.asString()))
+                        .map(it -> this.scoreboard.getObjective(it.getAsString()))
                         .toList();
                 this.addAll(slot, objectives);
                 this.setSchedule(slot, compound.getInt("schedule"));
@@ -88,20 +88,20 @@ public class ScoreboardSchedule {
         }
     }
 
-    public void writeNbt(NbtCompound nbt) {
-        NbtCompound internal = new NbtCompound();
+    public void writeNbt(CompoundTag nbt) {
+        CompoundTag internal = new CompoundTag();
         this.schedules.forEach((slot, impl) -> {
-            NbtCompound compound = new NbtCompound();
-            NbtList list = new NbtList();
-            for (ScoreboardObjective objective : impl.list) {
-                list.add(NbtString.of(objective.getName()));
+            CompoundTag compound = new CompoundTag();
+            ListTag list = new ListTag();
+            for (Objective objective : impl.list) {
+                list.add(StringTag.valueOf(objective.getName()));
             }
             compound.put("contents", list);
             compound.putInt("schedule", impl.schedule);
             compound.putInt("internal", impl.internal);
             compound.putInt("index", impl.index);
             compound.putBoolean("enable", impl.enable);
-            internal.put(slot.asString(), compound);
+            internal.put(slot.getSerializedName(), compound);
         });
         nbt.put("DisplayInternal", internal);
     }
@@ -111,27 +111,27 @@ public class ScoreboardSchedule {
     }
 
     private static class SlotScheduleImpl {
-        final List<ScoreboardObjective> list = new ArrayList<>();
+        final List<Objective> list = new ArrayList<>();
         final Scoreboard scoreboard;
-        final ScoreboardDisplaySlot slot;
+        final DisplaySlot slot;
         int schedule;
         int internal;
         int index;
         boolean enable;
 
-        SlotScheduleImpl(Scoreboard scoreboard, ScoreboardDisplaySlot slot) {
+        SlotScheduleImpl(Scoreboard scoreboard, DisplaySlot slot) {
             this.scoreboard = scoreboard;
             this.slot = slot;
             this.enable = true;
         }
 
-        public void remove(ScoreboardObjective objective) {
+        public void remove(Objective objective) {
             this.list.remove(objective);
             if (this.list.size() == 1) {
                 String name = this.list.getFirst().getName();
-                String currentScore = this.scoreboard.getObjectiveForSlot(this.slot).getName();
-                if (!currentScore.equals(name)) {
-                    this.scoreboard.setObjectiveSlot(this.slot, this.list.getFirst());
+                Objective currentObjective = this.scoreboard.getDisplayObjective(this.slot);
+                if (currentObjective == null || !currentObjective.getName().equals(name)) {
+                    this.scoreboard.setDisplayObjective(this.slot, this.list.getFirst());
                 }
             }
         }
@@ -142,7 +142,7 @@ public class ScoreboardSchedule {
 
         void tick() {
             if (this.available() && ++this.internal >= this.schedule) {
-                this.scoreboard.setObjectiveSlot(this.slot, this.list.get(this.updateIndex()));
+                this.scoreboard.setDisplayObjective(this.slot, this.list.get(this.updateIndex()));
                 this.internal = 0;
             }
         }
@@ -157,7 +157,7 @@ public class ScoreboardSchedule {
 
         @Override
         public String toString() {
-            return this.list.stream().map(ScoreboardObjective::getName).collect(Collectors.joining(",", "[", "]")) +
+            return this.list.stream().map(Objective::getName).collect(Collectors.joining(",", "[", "]")) +
                     ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "],[enable:" + this.enable + "]";
         }
     }

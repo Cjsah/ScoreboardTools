@@ -1,6 +1,6 @@
 package net.cjsah.scbt.RecordType;
 
 public enum ElytraFlyingDistanceRecordType {
-    KILO_METRE(),
-    METRE()
+    KILO_METRE,
+    METRE
 }

@@ -1,9 +1,9 @@
 package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.ScoreboardTools;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,18 +11,18 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ServerPlayerInteractionManager.class)
-public class ServerPlayerInteractionManagerMixin {
+@Mixin(ServerPlayerGameMode.class)
+public class ServerPlayerGameModeMixin {
 
     @Final
     @Shadow
-    protected ServerPlayerEntity player;
+    protected ServerPlayer player;
 
     @Inject(
-            method = "tryBreakBlock",
+            method = "destroyBlock",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/Block;onBroken(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"
+                    target = "Lnet/minecraft/world/level/block/Block;destroy(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V"
             )
     )
     private void onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {

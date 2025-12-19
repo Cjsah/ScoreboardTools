@@ -9,9 +9,9 @@
     "CommandRegisterMixin",
     "FlintAndSteelItemMixin",
     "MinecraftServerMixin",
-    "ScoreboardStateMixin",
-    "ServerPlayerEntityMixin",
-    "ServerPlayerInteractionManagerMixin",
+    "ScoreboardSaveDataMixin",
+    "ServerPlayerMixin",
+    "ServerPlayerGameModeMixin",
     "ServerScoreboardAccessor"
   ],
   "injectors": {

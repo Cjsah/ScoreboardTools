@@ -4,16 +4,16 @@ import com.mojang.brigadier.context.CommandContext;
 import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
 import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,40 +31,40 @@ public class ScoreboardTools implements ModInitializer {
     public static final String ELYTRA_FLYING_DISTANCE = "elytraFlyingDistance";
 
     public static boolean FakePlayerScore = true;
-    public static final Set<ScoreboardObjective> MinedObjectives = new HashSet<>();
-    public static final Set<ScoreboardObjective> PlacedObjectives = new HashSet<>();
-    public static final Set<ScoreboardObjective> LevelObjectives = new HashSet<>();
-    public static final Map<ScoreboardObjective, OnlineTimeRecordType> OnlineObjectives = new HashMap<>();
-    public static final Map<ScoreboardObjective, ElytraFlyingDistanceRecordType> ElytraFlyingDistanceObjectives = new HashMap<>();
+    public static final Set<Objective> MinedObjectives = new HashSet<>();
+    public static final Set<Objective> PlacedObjectives = new HashSet<>();
+    public static final Set<Objective> LevelObjectives = new HashSet<>();
+    public static final Map<Objective, OnlineTimeRecordType> OnlineObjectives = new HashMap<>();
+    public static final Map<Objective, ElytraFlyingDistanceRecordType> ElytraFlyingDistanceObjectives = new HashMap<>();
 
     @Override
     public void onInitialize() {
     }
 
     @SuppressWarnings("DataFlowIssue")
-    public static void addScore(PlayerEntity player, Set<ScoreboardObjective> objectives) {
+    public static void addScore(Player player, Set<Objective> objectives) {
         if (!carpetBotScore(player)) return;
         ServerScoreboard scoreboard = player.getServer().getScoreboard();
-        objectives.forEach(it -> scoreboard.getOrCreateScore(player, it, true).incrementScore());
+        objectives.forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
     }
 
     @SuppressWarnings("DataFlowIssue")
-    public static void setScore(PlayerEntity player, Set<ScoreboardObjective> objectives, int score) {
+    public static void setScore(Player player, Set<Objective> objectives, int score) {
         if (!carpetBotScore(player)) return;
         ServerScoreboard scoreboard = player.getServer().getScoreboard();
-        objectives.forEach(it -> scoreboard.getOrCreateScore(player, it, true).setScore(score));
+        objectives.forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).set(score));
     }
 
     @SuppressWarnings("DataFlowIssue")
-    public static void setScore(PlayerEntity player, ScoreboardObjective objective, int score) {
+    public static void setScore(Player player, Objective objective, int score) {
         if (!carpetBotScore(player)) return;
         ServerScoreboard scoreboard = player.getServer().getScoreboard();
-        scoreboard.getOrCreateScore(player, objective, true).setScore(score);
+        scoreboard.getOrCreatePlayerScore(player, objective, true).set(score);
     }
 
-    public static void readNbt(Scoreboard scoreboard, NbtCompound nbt) {
+    public static void readNbt(Scoreboard scoreboard, CompoundTag nbt) {
         FakePlayerScore = !nbt.contains("FakePlayerScore") || nbt.getBoolean("FakePlayerScore");
-        NbtCompound bind = nbt.getCompound("ScoreboardBind");
+        CompoundTag bind = nbt.getCompound("ScoreboardBind");
         if (bind.isEmpty()) return;
         readObjectives(bind, scoreboard, MINED_COUNT, MinedObjectives);
         readObjectives(bind, scoreboard, PLACED_COUNT, PlacedObjectives);
@@ -73,8 +73,8 @@ public class ScoreboardTools implements ModInitializer {
         readMapObjectives(bind, scoreboard, ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives, ElytraFlyingDistanceRecordType.values());
     }
 
-    public static void writeNbt(NbtCompound nbt) {
-        NbtCompound compound = new NbtCompound();
+    public static void writeNbt(CompoundTag nbt) {
+        CompoundTag compound = new CompoundTag();
         writeObjectives(compound, MINED_COUNT, MinedObjectives);
         writeObjectives(compound, PLACED_COUNT, PlacedObjectives);
         writeObjectives(compound, LEVEL_BOARD, LevelObjectives);
@@ -84,50 +84,50 @@ public class ScoreboardTools implements ModInitializer {
         nbt.putBoolean("FakePlayerScore", FakePlayerScore);
     }
 
-    private static <T> void readMapObjectives(NbtCompound nbt, Scoreboard scoreboard, String key, Map<ScoreboardObjective, T> map, T[] values) {
+    private static <T> void readMapObjectives(CompoundTag nbt, Scoreboard scoreboard, String key, Map<Objective, T> map, T[] values) {
         map.clear();
-        NbtCompound compound = nbt.getCompound(key);
-        for (String name : compound.getKeys()) {
-            ScoreboardObjective objective = scoreboard.getNullableObjective(name);
+        CompoundTag compound = nbt.getCompound(key);
+        for (String name : compound.getAllKeys()) {
+            Objective objective = scoreboard.getObjective(name);
             if (objective != null) {
                 map.put(objective, values[compound.getInt(name)]);
             }
         }
     }
 
-    private static void readObjectives(NbtCompound nbt, Scoreboard scoreboard, String key, Collection<ScoreboardObjective> objectives) {
+    private static void readObjectives(CompoundTag nbt, Scoreboard scoreboard, String key, Collection<Objective> objectives) {
         objectives.clear();
-        for (NbtElement name : nbt.getList(key, NbtElement.STRING_TYPE)) {
-            ScoreboardObjective objective = scoreboard.getNullableObjective(name.asString());
+        for (Tag name : nbt.getList(key, Tag.TAG_STRING)) {
+            Objective objective = scoreboard.getObjective(name.getAsString());
             if (objective != null) objectives.add(objective);
         }
     }
 
-    private static <T extends Enum<T>> void writeMapObjectives(NbtCompound nbt, String key, Map<ScoreboardObjective, T> map) {
-        NbtCompound compound = new NbtCompound();
-        for (ScoreboardObjective objective : map.keySet()) {
+    private static <T extends Enum<T>> void writeMapObjectives(CompoundTag nbt, String key, Map<Objective, T> map) {
+        CompoundTag compound = new CompoundTag();
+        for (Objective objective : map.keySet()) {
             compound.putInt(objective.getName(), map.get(objective).ordinal());
         }
         nbt.put(key, compound);
     }
 
-    private static void writeObjectives(NbtCompound nbt, String key, Collection<ScoreboardObjective> objectives) {
-        NbtList list = new NbtList();
-        for (ScoreboardObjective objective : objectives) {
-            list.add(NbtString.of(objective.getName()));
+    private static void writeObjectives(CompoundTag nbt, String key, Collection<Objective> objectives) {
+        ListTag list = new ListTag();
+        for (Objective objective : objectives) {
+            list.add(StringTag.valueOf(objective.getName()));
         }
         nbt.put(key, list);
     }
 
-    public static void feedbackCompleted(CommandContext<ServerCommandSource> context) {
+    public static void feedbackCompleted(CommandContext<CommandSourceStack> context) {
         feedback(context, "Completed");
     }
 
-    public static void feedback(CommandContext<ServerCommandSource> context, String text) {
-        context.getSource().sendFeedback(() -> Text.of(text), false);
+    public static void feedback(CommandContext<CommandSourceStack> context, String text) {
+        context.getSource().sendSystemMessage(Component.literal(text));
     }
 
-    public static boolean carpetBotScore(PlayerEntity player) {
+    public static boolean carpetBotScore(Player player) {
         return FakePlayerScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
     }
 
