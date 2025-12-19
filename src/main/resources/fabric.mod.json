@@ -37,6 +37,6 @@
   ],
   "accessWidener" : "scbt.accesswidener",
   "depends": {
-    "minecraft": "${support_mc_version}"
+    "minecraft": "${minecraft_dependency}"
   }
 }
