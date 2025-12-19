@@ -1,9 +1,6 @@
 package net.cjsah.scbt;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import lombok.Getter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
@@ -16,6 +13,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+@Getter
 public class ScoreboardSchedule {
     private final Map<DisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
     private final Scoreboard scoreboard;
@@ -41,7 +39,7 @@ public class ScoreboardSchedule {
         this.getOrCreateAndExecute(slot, (impl) -> impl.remove(objective));
     }
 
-    private void setInternal(DisplaySlot slot, int internal) {
+    public void setInternal(DisplaySlot slot, int internal) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.internal = internal);
     }
 
@@ -50,7 +48,7 @@ public class ScoreboardSchedule {
         if (impl != null) impl.enable = enable;
     }
 
-    private void setIndex(DisplaySlot slot, int index) {
+    public void setIndex(DisplaySlot slot, int index) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.index = index);
     }
 
@@ -67,57 +65,19 @@ public class ScoreboardSchedule {
         consumer.accept(impl);
     }
 
-    public void readNbt(CompoundTag nbt) {
-        CompoundTag internal = nbt.getCompound("DisplayInternal");
-        if (internal.isEmpty()) return;
-        for (String key : internal.getAllKeys()) {
-            DisplaySlot slot = DisplaySlot.CODEC.byName(key);
-            if (slot != null) {
-                CompoundTag compound = internal .getCompound(key);
-                List<Objective> objectives = compound
-                        .getList("contents", Tag.TAG_STRING)
-                        .stream()
-                        .map(it -> this.scoreboard.getObjective(it.getAsString()))
-                        .toList();
-                this.addAll(slot, objectives);
-                this.setSchedule(slot, compound.getInt("schedule"));
-                this.setInternal(slot, compound.getInt("internal"));
-                this.setIndex(slot, compound.getInt("index"));
-                this.setEnable(slot, compound.getBoolean("enable"));
-            }
-        }
-    }
-
-    public void writeNbt(CompoundTag nbt) {
-        CompoundTag internal = new CompoundTag();
-        this.schedules.forEach((slot, impl) -> {
-            CompoundTag compound = new CompoundTag();
-            ListTag list = new ListTag();
-            for (Objective objective : impl.list) {
-                list.add(StringTag.valueOf(objective.getName()));
-            }
-            compound.put("contents", list);
-            compound.putInt("schedule", impl.schedule);
-            compound.putInt("internal", impl.internal);
-            compound.putInt("index", impl.index);
-            compound.putBoolean("enable", impl.enable);
-            internal.put(slot.getSerializedName(), compound);
-        });
-        nbt.put("DisplayInternal", internal);
-    }
-
     public void tick() {
         this.schedules.values().forEach(SlotScheduleImpl::tick);
     }
 
-    private static class SlotScheduleImpl {
-        final List<Objective> list = new ArrayList<>();
-        final Scoreboard scoreboard;
-        final DisplaySlot slot;
-        int schedule;
-        int internal;
-        int index;
-        boolean enable;
+    @Getter
+    public static class SlotScheduleImpl {
+        private final List<Objective> list = new ArrayList<>();
+        private final Scoreboard scoreboard;
+        private final DisplaySlot slot;
+        private int schedule;
+        private int internal;
+        private int index;
+        private boolean enable;
 
         SlotScheduleImpl(Scoreboard scoreboard, DisplaySlot slot) {
             this.scoreboard = scoreboard;
@@ -158,7 +118,7 @@ public class ScoreboardSchedule {
         @Override
         public String toString() {
             return this.list.stream().map(Objective::getName).collect(Collectors.joining(",", "[", "]")) +
-                    ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "],[enable:" + this.enable + "]";
+                ",[slot:" + this.slot + "],[schedule:" + this.schedule + "],[index:" + this.index + "],[internal:" + this.internal + "],[enable:" + this.enable + "]";
         }
     }
 

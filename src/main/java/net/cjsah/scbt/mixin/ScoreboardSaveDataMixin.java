@@ -1,7 +1,7 @@
 package net.cjsah.scbt.mixin;
 
 import net.cjsah.scbt.ScoreboardSchedule;
-import net.cjsah.scbt.ScoreboardTools;
+import net.cjsah.scbt.data.DataResolver;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -26,14 +26,14 @@ public class ScoreboardSaveDataMixin {
 
     @Inject(method = "load", at = @At("RETURN"))
     private void read(CompoundTag nbt, HolderLookup.Provider provider, CallbackInfoReturnable<ScoreboardSaveData> cir) {
-        ScoreboardTools.readNbt(this.scoreboard, nbt);
-        this.scheduleExecute((internal) -> internal.readNbt(nbt));
+        DataResolver.readNbt(this.scoreboard, nbt);
+        this.scheduleExecute(internal -> DataResolver.Schedule.readNbt(internal, nbt));
     }
 
     @Inject(method = "save", at = @At("RETURN"))
     private void write(CompoundTag nbt, HolderLookup.Provider provider, CallbackInfoReturnable<CompoundTag> cir) {
-        ScoreboardTools.writeNbt(nbt);
-        this.scheduleExecute((internal) -> internal.writeNbt(nbt));
+        DataResolver.writeNbt(nbt);
+        this.scheduleExecute(internal -> DataResolver.Schedule.writeNbt(internal, nbt));
     }
 
     @Unique
