@@ -8,8 +8,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
+import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
@@ -26,20 +26,20 @@ import static net.cjsah.scbt.ScoreboardTools.*;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-public class ScbCommand {
+public class ScoreboardToolCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
         dispatcher.register(literal("scbt")
                 .then(bind())
                 .then(unbind())
                 .then(literal("loop").then(argument("slot", ScoreboardSlotArgument.displaySlot())
-                        .then(literal("add").then(argument("objective", ObjectiveArgument.objective()).executes(ScbCommand::add)))
-                        .then(literal("remove").then(argument("objective", ObjectiveArgument.objective()).executes(ScbCommand::remove)))
-                        .then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(ScbCommand::schedule)))
-                        .then(literal("enable").executes(ScbCommand::enable))
-                        .then(literal("disable").executes(ScbCommand::disable))
+                        .then(literal("add").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::add)))
+                        .then(literal("remove").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::remove)))
+                        .then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(ScoreboardToolCommand::schedule)))
+                        .then(literal("enable").executes(ScoreboardToolCommand::enable))
+                        .then(literal("disable").executes(ScoreboardToolCommand::disable))
                 ))
-                .then(literal("fakePlayerScore").executes(ScbCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScbCommand::changeFakePlayerScore)))
+                .then(literal("fakePlayerScore").executes(ScoreboardToolCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScoreboardToolCommand::changeFakePlayerScore)))
         );
 
     }

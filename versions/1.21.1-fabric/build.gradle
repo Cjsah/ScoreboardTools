@@ -57,10 +57,6 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.property("dependencies.minecraft_version")}")
     mappings(loom.officialMojangMappings())
 
-    // Annotation processor
-    modCompileOnly("org.projectlombok:lombok:${project.property("dependencies.lombok_version")}")
-    annotationProcessor("org.projectlombok:lombok:${project.property("dependencies.lombok_version")}")
-
     switch (modPlatform) {
         case "fabric":
             modImplementation "net.fabricmc:fabric-loader:${project.property("dependencies.fabric_loader")}"

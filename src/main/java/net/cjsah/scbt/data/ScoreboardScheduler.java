@@ -1,6 +1,7 @@
-package net.cjsah.scbt;
+package net.cjsah.scbt.data;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
@@ -12,12 +13,22 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class ScoreboardSchedule {
+public class ScoreboardScheduler {
     private final Map<DisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
-    private final Scoreboard scoreboard;
+    private final ServerScoreboard scoreboard;
 
-    public ScoreboardSchedule(MinecraftServer server) {
-        this.scoreboard = server.getScoreboard();
+    public ScoreboardScheduler(ServerScoreboard scoreboard) {
+        this.scoreboard = scoreboard;
+    }
+
+    public void initScoreScheduler(DisplaySlot slot, List<Objective> objectives, int schedule, int internal, int index, boolean enable) {
+        SlotScheduleImpl impl = new SlotScheduleImpl(this.scoreboard, slot);
+        impl.list.addAll(objectives);
+        impl.schedule = schedule;
+        impl.internal = internal;
+        impl.index = index;
+        impl.enable = enable;
+        this.schedules.put(slot, impl);
     }
 
     public Map<DisplaySlot, SlotScheduleImpl> getSchedules() {

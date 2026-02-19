@@ -1,7 +1,7 @@
 package net.cjsah.scbt.data;
 
-import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
+import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.nbt.CompoundTag;

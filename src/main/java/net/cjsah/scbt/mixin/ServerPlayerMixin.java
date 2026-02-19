@@ -2,8 +2,8 @@ package net.cjsah.scbt.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
+import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardTools;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.ServerStatsCounter;

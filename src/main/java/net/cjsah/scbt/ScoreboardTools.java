@@ -1,8 +1,8 @@
 package net.cjsah.scbt;
 
 import com.mojang.brigadier.context.CommandContext;
-import net.cjsah.scbt.RecordType.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.RecordType.OnlineTimeRecordType;
+import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;

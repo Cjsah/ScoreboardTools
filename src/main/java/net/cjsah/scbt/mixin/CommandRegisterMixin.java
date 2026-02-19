@@ -1,7 +1,7 @@
 package net.cjsah.scbt.mixin;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.cjsah.scbt.command.ScbCommand;
+import net.cjsah.scbt.command.ScoreboardToolCommand;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -20,6 +20,6 @@ public class CommandRegisterMixin {
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/ScoreboardCommand;register(Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandBuildContext;)V"))
     public void register(Commands.CommandSelection commandSelection, CommandBuildContext commandBuildContext, CallbackInfo ci) {
-        ScbCommand.register(this.dispatcher);
+        ScoreboardToolCommand.register(this.dispatcher);
     }
 }

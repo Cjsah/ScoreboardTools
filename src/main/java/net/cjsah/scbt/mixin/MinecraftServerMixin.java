@@ -6,6 +6,7 @@ import net.cjsah.scbt.data.ScoreboardToolContext;
 import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
@@ -13,6 +14,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,22 +24,25 @@ import java.net.Proxy;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public class MinecraftServerMixin implements ScoreboardScheduleFake, ScoreboardToolFake {
+public abstract class MinecraftServerMixin implements ScoreboardScheduleFake, ScoreboardToolFake {
 
     @Unique
     private ScoreboardSchedule scbt$ScoreboardSchedule;
     @Unique
     private ScoreboardToolContext scbt$scoreboardContext;
 
+    @Shadow
+    public abstract ServerScoreboard getScoreboard();
+
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services, ChunkProgressListenerFactory chunkProgressListenerFactory, CallbackInfo ci) {
         this.scbt$ScoreboardSchedule = new ScoreboardSchedule((MinecraftServer) (Object) this);
-        this.scbt$scoreboardContext = new ScoreboardToolContext((MinecraftServer) (Object) this);
+        this.scbt$scoreboardContext = new ScoreboardToolContext((MinecraftServer) (Object) this, this.getScoreboard());
     }
 
     @Inject(method = "readScoreboard", at = @At("RETURN"))
     private void injectSaveData(DimensionDataStorage dimensionDataStorage, CallbackInfo ci) {
-        dimensionDataStorage.computeIfAbsent()
+        dimensionDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");
     }
 
     @Inject(
@@ -59,6 +64,6 @@ public class MinecraftServerMixin implements ScoreboardScheduleFake, ScoreboardT
 
     @Override
     public ScoreboardToolContext scbt$getContext() {
-        return null;
+        return this.scbt$scoreboardContext;
     }
 }
