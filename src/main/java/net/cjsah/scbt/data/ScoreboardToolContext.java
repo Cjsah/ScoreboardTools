@@ -14,6 +14,7 @@ import net.minecraft.world.scores.Objective;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -56,6 +57,12 @@ public class ScoreboardToolContext {
             .toList();
         this.scheduler.initScoreScheduler(slot, objectives, schedule, internal, index, enable);
         this.setDirty();
+    }
+
+    public void saveScoreScheduler(BiConsumer<DisplaySlot, ScoreboardScheduler.SlotScheduleImpl> saver) {
+        for (Map.Entry<DisplaySlot, ScoreboardScheduler.SlotScheduleImpl> entry : this.scheduler.getSchedules().entrySet()) {
+            saver.accept(entry.getKey(), entry.getValue());
+        }
     }
 
     public void addDirtyListener(Runnable runnable) {

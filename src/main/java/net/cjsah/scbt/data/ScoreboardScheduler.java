@@ -82,7 +82,6 @@ public class ScoreboardScheduler {
         this.schedules.values().forEach(SlotScheduleImpl::tick);
     }
 
-    @Getter
     public static class SlotScheduleImpl {
         private final List<Objective> list = new ArrayList<>();
         private final Scoreboard scoreboard;
@@ -126,6 +125,34 @@ public class ScoreboardScheduler {
             int origin = this.index;
             this.index = (this.index + 1) % size;
             return origin;
+        }
+
+        public List<Objective> getList() {
+            return this.list;
+        }
+
+        public Scoreboard getScoreboard() {
+            return this.scoreboard;
+        }
+
+        public DisplaySlot getSlot() {
+            return this.slot;
+        }
+
+        public int getSchedule() {
+            return this.schedule;
+        }
+
+        public int getInternal() {
+            return this.internal;
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+
+        public boolean isEnable() {
+            return this.enable;
         }
 
         @Override

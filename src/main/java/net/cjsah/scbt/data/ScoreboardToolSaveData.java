@@ -5,9 +5,11 @@ import net.cjsah.scbt.data.record.IScoreMapper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
 
 import java.util.List;
 
@@ -81,8 +83,19 @@ public class ScoreboardToolSaveData extends SavedData {
 
     private CompoundTag saveSchedule() {
         CompoundTag tag = new CompoundTag();
-
-
+        this.context.saveScoreScheduler((slot, impl) -> {
+            CompoundTag node = new CompoundTag();
+            ListTag list = new ListTag();
+            for (Objective objective : impl.getList()) {
+                list.add(StringTag.valueOf(objective.getName()));
+            }
+            node.put("Contents", list);
+            node.putInt("Schedule", impl.getSchedule());
+            node.putInt("Internal", impl.getInternal());
+            node.putInt("Index", impl.getIndex());
+            node.putBoolean("Enable", impl.isEnable());
+            tag.put(slot.getSerializedName(), node);
+        });
         return tag;
     }
 
