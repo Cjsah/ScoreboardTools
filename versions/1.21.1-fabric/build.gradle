@@ -61,11 +61,9 @@ dependencies {
     modCompileOnly("org.projectlombok:lombok:${project.property("dependencies.lombok_version")}")
     annotationProcessor("org.projectlombok:lombok:${project.property("dependencies.lombok_version")}")
 
-    // Dependency
-    modApi(annotationProcessor("top.hendrixshen.magiclib:magiclib-all-${project.name}:${project.property("dependencies.magiclib_version")}"))
-
     switch (modPlatform) {
         case "fabric":
+            modImplementation "net.fabricmc:fabric-loader:${project.property("dependencies.fabric_loader")}"
             break
         case "forge":
             forge("net.minecraftforge:forge:${project.property("dependencies.minecraft_version")}-${project.property("dependencies.forge_version")}")
@@ -175,7 +173,6 @@ processResources {
         if (platforms.contains(modPlatform)) {
             filesMatching(file) {
                 expand([
-                        "magiclib_dependency" : project.property("dependencies.magiclib_dependency"),
                         "minecraft_dependency": project.property("dependencies.minecraft_dependency"),
                         "mod_alias"           : project.parent.property("mod.id"),
                         "mod_description"     : project.parent.property("mod.description"),

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//#if MC >= 12104
+//#if MC >= 12102
 //$$ import net.minecraft.world.InteractionResult;
 //#else
 import net.minecraft.world.InteractionResultHolder;
@@ -28,7 +28,7 @@ public class BucketItemMixin {
             )
     )
     private void placedBlock(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<
-        //#if MC >= 12104
+        //#if MC >= 12102
         //$$ InteractionResult
         //#else
         InteractionResultHolder<ItemStack>
