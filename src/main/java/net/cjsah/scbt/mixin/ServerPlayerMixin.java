@@ -10,7 +10,6 @@ import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +20,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Consumer;
+
+//#if MC >= 12109
+//$$ import net.minecraft.server.ServerScoreboard;
+//#else
+import net.minecraft.world.scores.Scoreboard;
+//#endif
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
@@ -36,10 +41,20 @@ public class ServerPlayerMixin {
         method = "die",
         at = @At(
             value = "INVOKE",
+            //#if MC >= 12109
+            //$$ target = "Lnet/minecraft/server/ServerScoreboard;forAllObjectives(Lnet/minecraft/world/scores/criteria/ObjectiveCriteria;Lnet/minecraft/world/scores/ScoreHolder;Ljava/util/function/Consumer;)V"
+            //#else
             target = "Lnet/minecraft/world/scores/Scoreboard;forAllObjectives(Lnet/minecraft/world/scores/criteria/ObjectiveCriteria;Lnet/minecraft/world/scores/ScoreHolder;Ljava/util/function/Consumer;)V"
+            //#endif
         )
     )
-    public void onDeathScore(Scoreboard instance, ObjectiveCriteria objectiveCriteria, ScoreHolder scoreHolder, Consumer<ScoreAccess> consumer, Operation<Void> original) {
+    public void onDeathScore(
+        //#if MC >= 12109
+        //$$ ServerScoreboard instance,
+        //#else
+        Scoreboard instance,
+        //#endif
+        ObjectiveCriteria objectiveCriteria, ScoreHolder scoreHolder, Consumer<ScoreAccess> consumer, Operation<Void> original) {
         ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
         if (scoreContext.canScore(this.player)) {
             original.call(instance, objectiveCriteria, scoreHolder, consumer);
