@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.net.Proxy;
 import java.util.function.BooleanSupplier;
 
-//#if MC >= 12110
+//#if MC >= 12109
 //$$ import net.minecraft.server.level.progress.LevelLoadListener;
 //#else
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
@@ -37,7 +37,7 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services,
-                      //#if MC >= 12110
+                      //#if MC >= 12109
                       //$$ LevelLoadListener levelLoadListener,
                       //#else
                       ChunkProgressListenerFactory chunkProgressListenerFactory,
