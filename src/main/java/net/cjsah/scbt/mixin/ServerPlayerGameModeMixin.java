@@ -28,7 +28,7 @@ public class ServerPlayerGameModeMixin {
             )
     )
     private void onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
         scoreContext.addScore(this.player, ScoreType.MINED_COUNT);
     }
 }

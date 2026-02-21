@@ -40,7 +40,7 @@ public class ServerPlayerMixin {
         )
     )
     public void onDeathScore(Scoreboard instance, ObjectiveCriteria objectiveCriteria, ScoreHolder scoreHolder, Consumer<ScoreAccess> consumer, Operation<Void> original) {
-        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
         if (scoreContext.canScore(this.player)) {
             original.call(instance, objectiveCriteria, scoreHolder, consumer);
         }
@@ -57,7 +57,7 @@ public class ServerPlayerMixin {
     private void scbt$updateLevelScoreboard() {
         if (this.player.experienceLevel != this.scbt$lastExpLevel) {
             this.scbt$lastExpLevel = this.player.experienceLevel;
-            ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+            ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
             scoreContext.setOriginScore(this.player, ScoreType.LEVEL, this.player.experienceLevel);
         }
     }
@@ -66,14 +66,14 @@ public class ServerPlayerMixin {
     private void scbt$updateFlyingDistanceScoreboard() {
         int distance = this.stats.getValue(Stats.CUSTOM.get(Stats.FLY_ONE_CM));
         int aviate = this.stats.getValue(Stats.CUSTOM.get(Stats.AVIATE_ONE_CM));
-        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
         scoreContext.setOriginScore(this.player, ScoreType.FLYING_DISTANCE, distance + aviate);
     }
 
     @Unique
     private void scbt$updateOnlineScoreboard() {
         int totalTime = this.stats.getValue(Stats.CUSTOM.get(Stats.TOTAL_WORLD_TIME));
-        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.level().getServer()).scbt$getContext();
         scoreContext.setOriginScore(this.player, ScoreType.ONLINE_TIME, totalTime);
     }
 }

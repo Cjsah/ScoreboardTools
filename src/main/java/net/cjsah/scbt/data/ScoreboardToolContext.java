@@ -44,18 +44,16 @@ public class ScoreboardToolContext {
         return this.carpetBotScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
     }
 
-    @SuppressWarnings("DataFlowIssue")
     public void addScore(Player player, ScoreType scoreType) {
         if (!this.canScore(player)) return;
-        ServerScoreboard scoreboard = player.getServer().getScoreboard();
+        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
         Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
         row.keySet().forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
     }
 
-    @SuppressWarnings("DataFlowIssue")
     public void setOriginScore(Player player, ScoreType scoreType, int score) {
         if (!this.canScore(player)) return;
-        ServerScoreboard scoreboard = player.getServer().getScoreboard();
+        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
         Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
         row.forEach((objective, scoreMapper) ->
             scoreboard.getOrCreatePlayerScore(player, objective, true).set(scoreMapper.mapValue(score)));

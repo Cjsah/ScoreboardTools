@@ -7,7 +7,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -21,6 +20,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.net.Proxy;
 import java.util.function.BooleanSupplier;
 
+//#if MC >= 12110
+//$$ import net.minecraft.server.level.progress.LevelLoadListener;
+//#else
+import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+//#endif
+
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements ScoreboardToolFake {
 
@@ -31,7 +36,13 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     public abstract ServerScoreboard getScoreboard();
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services, ChunkProgressListenerFactory chunkProgressListenerFactory, CallbackInfo ci) {
+    private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services,
+                      //#if MC >= 12110
+                      //$$ LevelLoadListener levelLoadListener,
+                      //#else
+                      ChunkProgressListenerFactory chunkProgressListenerFactory,
+                      //#endif
+                      CallbackInfo ci) {
         this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
