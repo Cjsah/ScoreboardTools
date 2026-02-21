@@ -37,7 +37,11 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
 
     @Inject(method = "readScoreboard", at = @At("RETURN"))
     private void injectSaveData(DimensionDataStorage dimensionDataStorage, CallbackInfo ci) {
+        //#if MC >= 12105
+        //$$ dimensionDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE);
+        //#else
         dimensionDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");
+        //#endif
     }
 
     @Inject(
