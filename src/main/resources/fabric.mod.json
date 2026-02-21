@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "id": "${mod_id}",
   "version": "${mod_version}",
-
   "name": "${mod_name}",
   "description": "${mod_description}",
   "authors": [
@@ -18,7 +17,6 @@
         "homepage": "https://github.com/SkyDynamic"
       }
     }
-
   ],
   "contact": {
     "homepage": "${mod_homepage}",
@@ -28,9 +26,6 @@
   "license": "${mod_license}",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.cjsah.scbt.ScoreboardTools"
-    ]
   },
   "mixins": [
     "scbt.mixins.json"

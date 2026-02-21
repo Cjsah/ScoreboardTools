@@ -11,7 +11,6 @@ import net.cjsah.scbt.data.ScoreType;
 import net.cjsah.scbt.data.ScoreboardScheduler;
 import net.cjsah.scbt.data.ScoreboardToolContext;
 import net.cjsah.scbt.data.record.DummyRecordType;
-import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ObjectiveArgument;
@@ -20,7 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 
-import static net.cjsah.scbt.ScoreboardTools.*;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -139,6 +137,14 @@ public class ScoreboardToolCommand {
         ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
         context.getSource().sendSystemMessage(Component.literal("FakePlayerScore: " + (scoreContext.isCarpetBotScore() ? "enabled" : "disabled")));
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static void feedbackCompleted(CommandContext<CommandSourceStack> context) {
+        feedback(context, "Completed");
+    }
+
+    private static void feedback(CommandContext<CommandSourceStack> context, String text) {
+        context.getSource().sendSystemMessage(Component.literal(text));
     }
 
     @FunctionalInterface

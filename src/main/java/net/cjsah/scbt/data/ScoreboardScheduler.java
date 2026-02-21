@@ -139,10 +139,6 @@ public class ScoreboardScheduler {
             return this.list;
         }
 
-        public Scoreboard getScoreboard() {
-            return this.scoreboard;
-        }
-
         public DisplaySlot getSlot() {
             return this.slot;
         }
