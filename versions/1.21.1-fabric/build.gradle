@@ -261,7 +261,6 @@ tasks.named("runClient") {
                         writer.writeLine("autoJump:false")
                         writer.writeLine("enableVsync:false")
                         writer.writeLine("forceUnicodeFont:true")
-                        writer.writeLine("fov:1.0")
 
                         if (mcVersion < 11900) {
                             writer.writeLine("gamma:16.0")
@@ -269,9 +268,7 @@ tasks.named("runClient") {
 
                         writer.writeLine("guiScale:3")
                         writer.writeLine("lang:${Locale.getDefault().toString().toLowerCase()}")
-                        writer.writeLine("maxFps:260")
-                        writer.writeLine("renderDistance:10")
-                        writer.writeLine("soundCategory_master:0.0")
+                        writer.writeLine("maxFps:60")
                     }
                 }
             }

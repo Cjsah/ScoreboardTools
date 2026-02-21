@@ -30,6 +30,10 @@ public enum ScoreType {
         return this.name;
     }
 
+    public Class<? extends Enum<?>> getRecordType() {
+        return this.recordType;
+    }
+
     public IScoreMapper getScoreMapper(int recordType) {
         return (IScoreMapper) this.recordType.getEnumConstants()[recordType];
     }

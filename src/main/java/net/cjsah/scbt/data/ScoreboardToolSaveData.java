@@ -10,6 +10,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class ScoreboardToolSaveData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
+    public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
         tag.putBoolean("FakePlayerScore", ScoreboardTools.FakePlayerScore);
         tag.put("ScoreboardBind", this.saveBinds());
         tag.put("DisplayInternal", this.saveSchedule());

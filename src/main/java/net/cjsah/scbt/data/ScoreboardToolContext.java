@@ -41,6 +41,10 @@ public class ScoreboardToolContext {
         Objective objective = this.scoreboard.getObjective(name);
         if (objective == null) return;
         this.scores.put(type, objective, scoreMapper);
+    }
+
+    public void addScoreBind(Objective objective, ScoreType type, IScoreMapper scoreMapper) {
+        this.scores.put(type, objective, scoreMapper);
         this.setDirty();
     }
 
@@ -48,6 +52,11 @@ public class ScoreboardToolContext {
         for (Table.Cell<ScoreType, Objective, IScoreMapper> cell : this.scores.cellSet()) {
             saver.accept(cell);
         }
+    }
+
+    public void removeScoreBind(ScoreType scoreType, Objective objective) {
+        this.scores.remove(scoreType, objective);
+        this.setDirty();
     }
 
     public void initScoreScheduler(DisplaySlot slot, List<String> objectiveNames, int schedule, int internal, int index, boolean enable) {
@@ -63,6 +72,10 @@ public class ScoreboardToolContext {
         for (Map.Entry<DisplaySlot, ScoreboardScheduler.SlotScheduleImpl> entry : this.scheduler.getSchedules().entrySet()) {
             saver.accept(entry.getKey(), entry.getValue());
         }
+    }
+
+    public ScoreboardScheduler getScheduler() {
+        return this.scheduler;
     }
 
     public void addDirtyListener(Runnable runnable) {

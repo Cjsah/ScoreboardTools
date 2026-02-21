@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class ScoreboardSchedule {
     private final Map<DisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
     private final Scoreboard scoreboard;
@@ -22,6 +23,10 @@ public class ScoreboardSchedule {
 
     public Map<DisplaySlot, SlotScheduleImpl> getSchedules() {
         return this.schedules;
+    }
+
+    public Scoreboard getScoreboard() {
+        return this.scoreboard;
     }
 
     public boolean contains(DisplaySlot slot, Objective objective) {
@@ -71,7 +76,6 @@ public class ScoreboardSchedule {
         this.schedules.values().forEach(SlotScheduleImpl::tick);
     }
 
-    @Getter
     public static class SlotScheduleImpl {
         private final List<Objective> list = new ArrayList<>();
         private final Scoreboard scoreboard;
@@ -85,6 +89,34 @@ public class ScoreboardSchedule {
             this.scoreboard = scoreboard;
             this.slot = slot;
             this.enable = true;
+        }
+
+        public List<Objective> getList() {
+            return this.list;
+        }
+
+        public Scoreboard getScoreboard() {
+            return this.scoreboard;
+        }
+
+        public DisplaySlot getSlot() {
+            return this.slot;
+        }
+
+        public int getSchedule() {
+            return this.schedule;
+        }
+
+        public int getInternal() {
+            return this.internal;
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+
+        public boolean isEnable() {
+            return this.enable;
         }
 
         public void remove(Objective objective) {

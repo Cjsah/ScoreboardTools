@@ -8,11 +8,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.cjsah.scbt.data.ScoreType;
+import net.cjsah.scbt.data.ScoreboardScheduler;
+import net.cjsah.scbt.data.ScoreboardToolContext;
+import net.cjsah.scbt.data.record.DummyRecordType;
 import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
 import net.cjsah.scbt.data.record.OnlineTimeRecordType;
-import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.ScoreboardTools;
-import net.cjsah.scbt.fake.ScoreboardScheduleFake;
+import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.commands.arguments.ScoreboardSlotArgument;
@@ -29,67 +32,59 @@ import static net.minecraft.commands.Commands.literal;
 public class ScoreboardToolCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
-        dispatcher.register(literal("scbt")
-                .then(bind())
-                .then(unbind())
-                .then(literal("loop").then(argument("slot", ScoreboardSlotArgument.displaySlot())
-                        .then(literal("add").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::add)))
-                        .then(literal("remove").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::remove)))
-                        .then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(ScoreboardToolCommand::schedule)))
-                        .then(literal("enable").executes(ScoreboardToolCommand::enable))
-                        .then(literal("disable").executes(ScoreboardToolCommand::disable))
-                ))
-                .then(literal("fakePlayerScore").executes(ScoreboardToolCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScoreboardToolCommand::changeFakePlayerScore)))
+        dispatcher.register(literal("scoretool")
+            .then(bind())
+            .then(unbind())
+            .then(literal("loop").then(argument("slot", ScoreboardSlotArgument.displaySlot())
+                .then(literal("add").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::add)))
+                .then(literal("remove").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::remove)))
+                .then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(ScoreboardToolCommand::schedule)))
+                .then(literal("enable").executes(ScoreboardToolCommand::enable))
+                .then(literal("disable").executes(ScoreboardToolCommand::disable))
+            ))
+            .then(literal("fakePlayerScore").executes(ScoreboardToolCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScoreboardToolCommand::changeFakePlayerScore)))
         );
 
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> bind() {
         LiteralArgumentBuilder<CommandSourceStack> bind = literal("bind");
-        appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::add);
-        appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::add);
-        appendMapCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::put, OnlineTimeRecordType.class);
-        appendCriterion(bind, ScoreboardTools.LEVEL_BOARD, LevelObjectives::add);
-        appendMapCriterion(bind, ScoreboardTools.ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives::put, ElytraFlyingDistanceRecordType.class);
+        for (ScoreType scoreType : ScoreType.values()) {
+            var node = argument("name", ObjectiveArgument.objective());
+            if (scoreType.getRecordType() == DummyRecordType.class) {
+                node.executes(context ->
+                    commandExecute(context, (scoreContext, objective) ->
+                        scoreContext.addScoreBind(objective, scoreType, DummyRecordType.DUMMY)));
+            } else {
+                for (Enum<?> recordType : scoreType.getRecordType().getEnumConstants()) {
+                    node.then(literal(recordType.name()).executes(context ->
+                        commandExecute(context, (scoreContext, objective) ->
+                            scoreContext.addScoreBind(objective, scoreType, scoreType.getScoreMapper(recordType.ordinal())))));
+                }
+            }
+            bind.then(literal(scoreType.getName()).then(node));
+        }
         return bind;
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> unbind() {
         LiteralArgumentBuilder<CommandSourceStack> bind = literal("unbind");
-        appendCriterion(bind, ScoreboardTools.MINED_COUNT, MinedObjectives::remove);
-        appendCriterion(bind, ScoreboardTools.PLACED_COUNT, PlacedObjectives::remove);
-        appendCriterion(bind, ScoreboardTools.ONLINE_TIME, OnlineObjectives::remove);
-        appendCriterion(bind, ScoreboardTools.LEVEL_BOARD, LevelObjectives::remove);
-        appendCriterion(bind, ScoreboardTools.ELYTRA_FLYING_DISTANCE, ElytraFlyingDistanceObjectives::remove);
+        for (ScoreType scoreType : ScoreType.values()) {
+
+            bind.then(literal(scoreType.getName()).then(argument("name", ObjectiveArgument.objective())
+                .executes(context ->
+                    commandExecute(context, (scoreContext, objective) ->
+                        scoreContext.removeScoreBind(scoreType, objective)))));
+        }
         return bind;
     }
 
-    private static void appendCriterion(LiteralArgumentBuilder<CommandSourceStack> literal, String name, Consumer<Objective> execute) {
-        literal.then(literal(name).then(argument("name", ObjectiveArgument.objective()).executes(context -> {
-            Objective objective = ObjectiveArgument.getObjective(context, "name");
-            execute.accept(objective);
-            feedbackCompleted(context);
-            return Command.SINGLE_SUCCESS;
-        })));
-    }
-
-    private static <T extends Enum<T>> void appendMapCriterion(
-        LiteralArgumentBuilder<CommandSourceStack> literal,
-        String name,
-        BiConsumer<Objective, T> execute,
-        Class<T> clazz
-    ) {
-        RequiredArgumentBuilder<CommandSourceStack, String> node =
-            argument("name", ObjectiveArgument.objective());
-        for (T type : clazz.getEnumConstants()) {
-            node.then(literal(type.name()).executes(context -> {
-                Objective objective = ObjectiveArgument.getObjective(context, "name");
-                execute.accept(objective, type);
-                feedbackCompleted(context);
-                return Command.SINGLE_SUCCESS;
-            }));
-        }
-        literal.then(literal(name).then(node));
+    private static int commandExecute(CommandContext<CommandSourceStack> context, BiConsumer<ScoreboardToolContext, Objective> execute) throws CommandSyntaxException {
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
+        Objective objective = ObjectiveArgument.getObjective(context, "name");
+        execute.accept(scoreContext, objective);
+        feedbackCompleted(context);
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int add(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -133,10 +128,10 @@ public class ScoreboardToolCommand {
         });
     }
 
-    private static int executeInternal(CommandContext<CommandSourceStack> context, BiConsumer<ScoreboardSchedule, DisplaySlot> consumer) throws CommandSyntaxException {
-        ScoreboardSchedule internal = ((ScoreboardScheduleFake) context.getSource().getServer()).scbt$getSchedule();
+    private static int executeInternal(CommandContext<CommandSourceStack> context, BiConsumer<ScoreboardScheduler, DisplaySlot> consumer) throws CommandSyntaxException {
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
         DisplaySlot slot = ScoreboardSlotArgument.getDisplaySlot(context, "slot");
-        consumer.accept(internal, slot);
+        consumer.accept(scoreContext.getScheduler(), slot);
         return Command.SINGLE_SUCCESS;
     }
 

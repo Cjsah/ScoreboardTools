@@ -9,7 +9,6 @@
     "CommandRegisterMixin",
     "FlintAndSteelItemMixin",
     "MinecraftServerMixin",
-    "ScoreboardSaveDataMixin",
     "ServerPlayerMixin",
     "ServerPlayerGameModeMixin",
     "ServerScoreboardAccessor"
