@@ -2,7 +2,6 @@ package net.cjsah.scbt.data;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.data.record.IScoreMapper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -37,13 +36,17 @@ public class ScoreboardToolContext {
         this.carpetBotScore = carpetBotScore;
     }
 
-    public boolean isCarpetBotScore(Player player) {
+    public boolean isCarpetBotScore() {
+        return this.carpetBotScore;
+    }
+
+    public boolean canScore(Player player) {
         return this.carpetBotScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
     }
 
     @SuppressWarnings("DataFlowIssue")
     public void addScore(Player player, ScoreType scoreType) {
-        if (!this.isCarpetBotScore(player)) return;
+        if (!this.canScore(player)) return;
         ServerScoreboard scoreboard = player.getServer().getScoreboard();
         Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
         row.keySet().forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
@@ -51,7 +54,7 @@ public class ScoreboardToolContext {
 
     @SuppressWarnings("DataFlowIssue")
     public void setOriginScore(Player player, ScoreType scoreType, int score) {
-        if (!this.isCarpetBotScore(player)) return;
+        if (!this.canScore(player)) return;
         ServerScoreboard scoreboard = player.getServer().getScoreboard();
         Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
         row.forEach((objective, scoreMapper) ->

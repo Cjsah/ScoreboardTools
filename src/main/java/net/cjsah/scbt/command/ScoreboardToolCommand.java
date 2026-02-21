@@ -136,7 +136,8 @@ public class ScoreboardToolCommand {
     }
 
     private static int showFakePlayerScore(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSystemMessage(Component.literal("FakePlayerScore: " + (ScoreboardTools.FakePlayerScore ? "enabled" : "disabled")));
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
+        context.getSource().sendSystemMessage(Component.literal("FakePlayerScore: " + (scoreContext.isCarpetBotScore() ? "enabled" : "disabled")));
         return Command.SINGLE_SUCCESS;
     }
 

@@ -41,7 +41,7 @@ public class ServerPlayerMixin {
     )
     public void onDeathScore(Scoreboard instance, ObjectiveCriteria objectiveCriteria, ScoreHolder scoreHolder, Consumer<ScoreAccess> consumer, Operation<Void> original) {
         ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
-        if (scoreContext.isCarpetBotScore(this.player)) {
+        if (scoreContext.canScore(this.player)) {
             original.call(instance, objectiveCriteria, scoreHolder, consumer);
         }
     }

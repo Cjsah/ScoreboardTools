@@ -1,6 +1,5 @@
 package net.cjsah.scbt.data;
 
-import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.data.record.IScoreMapper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +21,7 @@ public class ScoreboardToolSaveData extends SavedData {
     }
 
     public ScoreboardToolSaveData load(CompoundTag tag, HolderLookup.Provider provider) {
-        ScoreboardTools.FakePlayerScore = tag.getBoolean("FakePlayerScore");
+        this.context.setCarpetBotScore(tag.getBoolean("FakePlayerScore"));
         this.loadBinds(tag.getList("ScoreboardBind", Tag.TAG_LIST));
         this.loadSchedule(tag.getCompound("DisplayInternal"));
         return this;
@@ -64,7 +63,7 @@ public class ScoreboardToolSaveData extends SavedData {
 
     @Override
     public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
-        tag.putBoolean("FakePlayerScore", ScoreboardTools.FakePlayerScore);
+        tag.putBoolean("FakePlayerScore", this.context.isCarpetBotScore());
         tag.put("ScoreboardBind", this.saveBinds());
         tag.put("DisplayInternal", this.saveSchedule());
         return tag;
