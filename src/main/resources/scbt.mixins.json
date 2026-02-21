@@ -10,8 +10,7 @@
     "FlintAndSteelItemMixin",
     "MinecraftServerMixin",
     "ServerPlayerMixin",
-    "ServerPlayerGameModeMixin",
-    "ServerScoreboardAccessor"
+    "ServerPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

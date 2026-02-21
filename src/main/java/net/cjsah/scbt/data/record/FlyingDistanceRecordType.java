@@ -1,12 +1,12 @@
 package net.cjsah.scbt.data.record;
 
-public enum ElytraFlyingDistanceRecordType implements IScoreMapper {
+public enum FlyingDistanceRecordType implements IScoreMapper {
     KILO_METRE(100000),
     METRE(100);
 
     private final int factor;
 
-    ElytraFlyingDistanceRecordType(int factor) {
+    FlyingDistanceRecordType(int factor) {
         this.factor = factor;
     }
 

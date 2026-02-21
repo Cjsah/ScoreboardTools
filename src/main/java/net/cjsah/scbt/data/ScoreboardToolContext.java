@@ -2,12 +2,13 @@ package net.cjsah.scbt.data;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.data.record.IScoreMapper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
@@ -20,16 +21,41 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ScoreboardToolContext {
-    private final MinecraftServer server;
+    public static final Class<?> CARPET_PLAYER_CLASS;
     private final ServerScoreboard scoreboard;
     private final Table<ScoreType, Objective, IScoreMapper> scores = HashBasedTable.create();
     private final ScoreboardScheduler scheduler;
     private final List<Runnable> dirtyListeners = new ArrayList<>();
+    private boolean carpetBotScore = true;
 
-    public ScoreboardToolContext(MinecraftServer server, ServerScoreboard scoreboard) {
-        this.server = server;
+    public ScoreboardToolContext(ServerScoreboard scoreboard) {
         this.scoreboard = scoreboard;
-        this.scheduler = new ScoreboardScheduler(scoreboard);
+        this.scheduler = new ScoreboardScheduler(scoreboard, this);
+    }
+
+    public void setCarpetBotScore(boolean carpetBotScore) {
+        this.carpetBotScore = carpetBotScore;
+    }
+
+    public boolean isCarpetBotScore(Player player) {
+        return this.carpetBotScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public void addScore(Player player, ScoreType scoreType) {
+        if (!this.isCarpetBotScore(player)) return;
+        ServerScoreboard scoreboard = player.getServer().getScoreboard();
+        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
+        row.keySet().forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public void setOriginScore(Player player, ScoreType scoreType, int score) {
+        if (!this.isCarpetBotScore(player)) return;
+        ServerScoreboard scoreboard = player.getServer().getScoreboard();
+        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
+        row.forEach((objective, scoreMapper) ->
+            scoreboard.getOrCreatePlayerScore(player, objective, true).set(scoreMapper.mapValue(score)));
     }
 
     public void clearScoreBinds() {
@@ -102,4 +128,13 @@ public class ScoreboardToolContext {
         return this.createData().load(compoundTag, provider);
     }
 
+    static {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName("carpet.patches.EntityPlayerMPFake");
+        } catch (ClassNotFoundException e) {
+            clazz = null;
+        }
+        CARPET_PLAYER_CLASS = clazz;
+    }
 }

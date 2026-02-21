@@ -1,6 +1,9 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.ScoreboardTools;
+import net.cjsah.scbt.data.ScoreType;
+import net.cjsah.scbt.data.ScoreboardToolContext;
+import net.cjsah.scbt.fake.ScoreboardToolFake;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
@@ -34,6 +37,9 @@ public class BucketItemMixin {
         InteractionResultHolder<ItemStack>
         //#endif
         > cir) {
-        ScoreboardTools.addScore(player, ScoreboardTools.PlacedObjectives);
+        MinecraftServer server = level.getServer();
+        if (server == null) return;
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) server).scbt$getContext();
+        scoreContext.addScore(player, ScoreType.PLACED_COUNT);
     }
 }

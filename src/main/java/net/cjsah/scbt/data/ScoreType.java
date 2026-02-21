@@ -1,7 +1,7 @@
 package net.cjsah.scbt.data;
 
 import net.cjsah.scbt.data.record.DummyRecordType;
-import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
+import net.cjsah.scbt.data.record.FlyingDistanceRecordType;
 import net.cjsah.scbt.data.record.IScoreMapper;
 import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import org.jetbrains.annotations.Nullable;
@@ -12,9 +12,9 @@ import java.util.Map;
 public enum ScoreType {
     MINED_COUNT("minedCount", DummyRecordType.class),
     PLACED_COUNT("placedCount", DummyRecordType.class),
-    LEVEL_BOARD("level", DummyRecordType.class),
+    LEVEL("level", DummyRecordType.class),
     ONLINE_TIME("onlineTime", OnlineTimeRecordType.class),
-    ELYTRA_FLYING_DISTANCE("elytraFlyingDistance", ElytraFlyingDistanceRecordType.class)
+    FLYING_DISTANCE("flyingDistance", FlyingDistanceRecordType.class)
     ;
 
     private final String name;

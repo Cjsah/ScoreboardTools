@@ -2,13 +2,12 @@ package net.cjsah.scbt.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.data.record.OnlineTimeRecordType;
-import net.cjsah.scbt.ScoreboardTools;
+import net.cjsah.scbt.data.ScoreType;
+import net.cjsah.scbt.data.ScoreboardToolContext;
+import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
@@ -21,10 +20,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Map;
 import java.util.function.Consumer;
-
-import static net.cjsah.scbt.ScoreboardTools.carpetBotScore;
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
@@ -44,7 +40,8 @@ public class ServerPlayerMixin {
         )
     )
     public void onDeathScore(Scoreboard instance, ObjectiveCriteria objectiveCriteria, ScoreHolder scoreHolder, Consumer<ScoreAccess> consumer, Operation<Void> original) {
-        if (carpetBotScore(this.player)) {
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        if (scoreContext.isCarpetBotScore(this.player)) {
             original.call(instance, objectiveCriteria, scoreHolder, consumer);
         }
     }
@@ -53,44 +50,30 @@ public class ServerPlayerMixin {
     public void tick(CallbackInfo ci) {
         scbt$updateOnlineScoreboard();
         scbt$updateLevelScoreboard();
-        scbt$updateElytraFlyingDistanceScoreboard();
+        scbt$updateFlyingDistanceScoreboard();
     }
 
     @Unique
     private void scbt$updateLevelScoreboard() {
         if (this.player.experienceLevel != this.scbt$lastExpLevel) {
             this.scbt$lastExpLevel = this.player.experienceLevel;
-            ScoreboardTools.setScore(this.player, ScoreboardTools.LevelObjectives, this.player.experienceLevel);
+            ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+            scoreContext.setOriginScore(this.player, ScoreType.LEVEL, this.player.experienceLevel);
         }
     }
 
     @Unique
-    private void scbt$updateElytraFlyingDistanceScoreboard() {
-        for (Map.Entry<Objective, ElytraFlyingDistanceRecordType> entry : ScoreboardTools.ElytraFlyingDistanceObjectives.entrySet()) {
-            Objective objective = entry.getKey();
-            int distance = this.stats.getValue(Stats.CUSTOM.get(Stats.FLY_ONE_CM));
-            int aviate = this.stats.getValue(Stats.CUSTOM.get(Stats.AVIATE_ONE_CM));
-            int total = distance + aviate;
-            switch (entry.getValue()) {
-                case METRE -> ScoreboardTools.setScore(player, objective, total / 100);
-                case KILO_METRE -> ScoreboardTools.setScore(player, objective, total / 100000);
-            }
-        }
+    private void scbt$updateFlyingDistanceScoreboard() {
+        int distance = this.stats.getValue(Stats.CUSTOM.get(Stats.FLY_ONE_CM));
+        int aviate = this.stats.getValue(Stats.CUSTOM.get(Stats.AVIATE_ONE_CM));
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        scoreContext.setOriginScore(this.player, ScoreType.FLYING_DISTANCE, distance + aviate);
     }
 
     @Unique
     private void scbt$updateOnlineScoreboard() {
-        for (Map.Entry<Objective, OnlineTimeRecordType> entry : ScoreboardTools.OnlineObjectives.entrySet()) {
-            Objective objective = entry.getKey();
-            int totalTime = this.stats.getValue(Stats.CUSTOM.get(Stats.TOTAL_WORLD_TIME));
-            int interval = switch (entry.getValue()) {
-                case TICK -> 1;
-                case SECOND -> 20;
-                case MINUTE -> 1200;
-                case HOUR -> 72000;
-                case DAY -> 1728000;
-            };
-            ScoreboardTools.setScore(player, objective, totalTime / interval);
-        }
+        int totalTime = this.stats.getValue(Stats.CUSTOM.get(Stats.TOTAL_WORLD_TIME));
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        scoreContext.setOriginScore(this.player, ScoreType.ONLINE_TIME, totalTime);
     }
 }

@@ -1,6 +1,8 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.ScoreboardTools;
+import net.cjsah.scbt.data.ScoreType;
+import net.cjsah.scbt.data.ScoreboardToolContext;
+import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
@@ -26,6 +28,7 @@ public class ServerPlayerGameModeMixin {
             )
     )
     private void onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        ScoreboardTools.addScore(this.player, ScoreboardTools.MinedObjectives);
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) this.player.server).scbt$getContext();
+        scoreContext.addScore(this.player, ScoreType.MINED_COUNT);
     }
 }

@@ -15,9 +15,11 @@ import java.util.stream.Collectors;
 public class ScoreboardScheduler {
     private final Map<DisplaySlot, SlotScheduleImpl> schedules = new HashMap<>();
     private final ServerScoreboard scoreboard;
+    private final ScoreboardToolContext context;
 
-    public ScoreboardScheduler(ServerScoreboard scoreboard) {
+    public ScoreboardScheduler(ServerScoreboard scoreboard, ScoreboardToolContext context) {
         this.scoreboard = scoreboard;
+        this.context = context;
     }
 
     public void initScoreScheduler(DisplaySlot slot, List<Objective> objectives, int schedule, int internal, int index, boolean enable) {
@@ -41,31 +43,38 @@ public class ScoreboardScheduler {
 
     public void add(DisplaySlot slot, Objective objective) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.add(objective));
+        this.context.setDirty();
     }
 
     public void addAll(DisplaySlot slot, List<Objective> objectives) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.list.addAll(objectives));
+        this.context.setDirty();
     }
 
     public void remove(DisplaySlot slot, Objective objective) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.remove(objective));
+        this.context.setDirty();
     }
 
     public void setInternal(DisplaySlot slot, int internal) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.internal = internal);
+        this.context.setDirty();
     }
 
     public void setEnable(DisplaySlot slot, boolean enable) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         if (impl != null) impl.enable = enable;
+        this.context.setDirty();
     }
 
     public void setIndex(DisplaySlot slot, int index) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.index = index);
+        this.context.setDirty();
     }
 
     public void setSchedule(DisplaySlot slot, int process) {
         this.getOrCreateAndExecute(slot, (impl) -> impl.schedule = process);
+        this.context.setDirty();
     }
 
     private void getOrCreateAndExecute(DisplaySlot slot, Consumer<SlotScheduleImpl> consumer) {

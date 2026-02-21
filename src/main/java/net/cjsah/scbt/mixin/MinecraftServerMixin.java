@@ -1,9 +1,7 @@
 package net.cjsah.scbt.mixin;
 
 import com.mojang.datafixers.DataFixer;
-import net.cjsah.scbt.ScoreboardSchedule;
 import net.cjsah.scbt.data.ScoreboardToolContext;
-import net.cjsah.scbt.fake.ScoreboardScheduleFake;
 import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
@@ -24,10 +22,8 @@ import java.net.Proxy;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin implements ScoreboardScheduleFake, ScoreboardToolFake {
+public abstract class MinecraftServerMixin implements ScoreboardToolFake {
 
-    @Unique
-    private ScoreboardSchedule scbt$ScoreboardSchedule;
     @Unique
     private ScoreboardToolContext scbt$scoreboardContext;
 
@@ -36,8 +32,7 @@ public abstract class MinecraftServerMixin implements ScoreboardScheduleFake, Sc
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services, ChunkProgressListenerFactory chunkProgressListenerFactory, CallbackInfo ci) {
-        this.scbt$ScoreboardSchedule = new ScoreboardSchedule((MinecraftServer) (Object) this);
-        this.scbt$scoreboardContext = new ScoreboardToolContext((MinecraftServer) (Object) this, this.getScoreboard());
+        this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
     @Inject(method = "readScoreboard", at = @At("RETURN"))
@@ -54,12 +49,7 @@ public abstract class MinecraftServerMixin implements ScoreboardScheduleFake, Sc
             )
     )
     private void scoreboardTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        this.scbt$ScoreboardSchedule.tick();
-    }
-
-    @Override
-    public ScoreboardSchedule scbt$getSchedule() {
-        return this.scbt$ScoreboardSchedule;
+        this.scbt$scoreboardContext.getScheduler().tick();
     }
 
     @Override

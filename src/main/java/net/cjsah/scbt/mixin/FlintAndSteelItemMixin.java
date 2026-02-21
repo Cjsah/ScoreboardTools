@@ -1,6 +1,9 @@
 package net.cjsah.scbt.mixin;
 
-import net.cjsah.scbt.ScoreboardTools;
+import net.cjsah.scbt.data.ScoreType;
+import net.cjsah.scbt.data.ScoreboardToolContext;
+import net.cjsah.scbt.fake.ScoreboardToolFake;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.context.UseOnContext;
@@ -19,6 +22,9 @@ public class FlintAndSteelItemMixin {
             )
     )
     private void placedBlock(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
-        ScoreboardTools.addScore(context.getPlayer(), ScoreboardTools.MinedObjectives);
+        MinecraftServer server = context.getLevel().getServer();
+        if (server == null) return;
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) server).scbt$getContext();
+        scoreContext.addScore(context.getPlayer(), ScoreType.MINED_COUNT);
     }
 }

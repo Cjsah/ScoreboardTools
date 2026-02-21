@@ -5,15 +5,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.scbt.data.ScoreType;
 import net.cjsah.scbt.data.ScoreboardScheduler;
 import net.cjsah.scbt.data.ScoreboardToolContext;
 import net.cjsah.scbt.data.record.DummyRecordType;
-import net.cjsah.scbt.data.record.ElytraFlyingDistanceRecordType;
-import net.cjsah.scbt.data.record.OnlineTimeRecordType;
 import net.cjsah.scbt.ScoreboardTools;
 import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.commands.CommandSourceStack;
@@ -22,8 +19,6 @@ import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
-
-import java.util.function.Consumer;
 
 import static net.cjsah.scbt.ScoreboardTools.*;
 import static net.minecraft.commands.Commands.argument;
@@ -70,7 +65,6 @@ public class ScoreboardToolCommand {
     private static LiteralArgumentBuilder<CommandSourceStack> unbind() {
         LiteralArgumentBuilder<CommandSourceStack> bind = literal("unbind");
         for (ScoreType scoreType : ScoreType.values()) {
-
             bind.then(literal(scoreType.getName()).then(argument("name", ObjectiveArgument.objective())
                 .executes(context ->
                     commandExecute(context, (scoreContext, objective) ->
@@ -136,7 +130,8 @@ public class ScoreboardToolCommand {
     }
 
     private static int changeFakePlayerScore(CommandContext<CommandSourceStack> context) {
-        ScoreboardTools.FakePlayerScore = BoolArgumentType.getBool(context, "enable");
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
+        scoreContext.setCarpetBotScore(BoolArgumentType.getBool(context, "enable"));
         return Command.SINGLE_SUCCESS;
     }
 
