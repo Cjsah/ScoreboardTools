@@ -67,15 +67,16 @@ public class ScoreboardToolSaveData extends SavedData {
 
     private Map<DisplaySlot, SchedulePacked> saveSchedule() {
         Map<DisplaySlot, SchedulePacked> schedules = new HashMap<>();
-        this.context.saveScoreScheduler((slot, impl) -> {
-            List<String> contents = impl.getList().stream().map(Objective::getName).toList();
-            schedules.put(slot, new SchedulePacked(
+        this.context.saveScoreScheduler(schedule -> {
+            List<String> contents = schedule.getList().stream().map(Objective::getName).toList();
+            schedules.put(schedule.getSlot(), new SchedulePacked(
                 contents,
-                impl.getSchedule(),
-                impl.getInternal(),
-                impl.getIndex(),
-                impl.isEnable()
+                schedule.getSchedule(),
+                schedule.getInternal(),
+                schedule.getIndex(),
+                schedule.isEnable()
             ));
+
         });
         return schedules;
     }

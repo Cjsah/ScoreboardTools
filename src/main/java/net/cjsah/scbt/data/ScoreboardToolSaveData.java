@@ -84,18 +84,18 @@ public class ScoreboardToolSaveData extends SavedData {
 
     private CompoundTag saveSchedule() {
         CompoundTag tag = new CompoundTag();
-        this.context.saveScoreScheduler((slot, impl) -> {
+        this.context.saveScoreScheduler(schedule -> {
             CompoundTag node = new CompoundTag();
             ListTag list = new ListTag();
-            for (Objective objective : impl.getList()) {
+            for (Objective objective : schedule.getList()) {
                 list.add(StringTag.valueOf(objective.getName()));
             }
             node.put("Contents", list);
-            node.putInt("Schedule", impl.getSchedule());
-            node.putInt("Internal", impl.getInternal());
-            node.putInt("Index", impl.getIndex());
-            node.putBoolean("Enable", impl.isEnable());
-            tag.put(slot.getSerializedName(), node);
+            node.putInt("Schedule", schedule.getSchedule());
+            node.putInt("Internal", schedule.getInternal());
+            node.putInt("Index", schedule.getIndex());
+            node.putBoolean("Enable", schedule.isEnable());
+            tag.put(schedule.getSlot().getSerializedName(), node);
         });
         return tag;
     }

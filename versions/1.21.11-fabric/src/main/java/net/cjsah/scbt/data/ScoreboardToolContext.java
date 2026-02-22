@@ -124,7 +124,7 @@ public class ScoreboardToolContext {
             .entrySet()
             .stream()
             .collect(Collectors.toMap(Map.Entry::getKey, it -> {
-                ScoreboardScheduler.SlotScheduleImpl impl = it.getValue();
+                ScoreboardScheduler.SlotScheduler impl = it.getValue();
                 List<String> contents = impl.getList().stream().map(Objective::getName).toList();
                 return new ScoreboardToolSaveData.SchedulePacked(
                     contents,

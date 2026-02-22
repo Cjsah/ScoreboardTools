@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ScoreboardToolContext {
@@ -103,9 +102,9 @@ public class ScoreboardToolContext {
         this.setDirty();
     }
 
-    public void saveScoreScheduler(BiConsumer<DisplaySlot, ScoreboardScheduler.SlotScheduleImpl> saver) {
-        for (Map.Entry<DisplaySlot, ScoreboardScheduler.SlotScheduleImpl> entry : this.scheduler.getSchedules().entrySet()) {
-            saver.accept(entry.getKey(), entry.getValue());
+    public void saveScoreScheduler(Consumer<ScoreboardScheduler.SlotScheduler> saver) {
+        for (ScoreboardScheduler.SlotScheduler schedule : this.scheduler.getSchedules().values()) {
+            saver.accept(schedule);
         }
     }
 
