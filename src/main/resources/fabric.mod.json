@@ -30,7 +30,6 @@
   "mixins": [
     "scbt.mixins.json"
   ],
-  "accessWidener" : "scbt.accesswidener",
   "depends": {
     "minecraft": "${minecraft_dependency}"
   }
