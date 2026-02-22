@@ -93,7 +93,7 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     //$$ @Final
     //$$ public abstract ServerLevel overworld();
     //$$
-    //$$ @Inject(method = "saveAllChunks", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V", shift = At.Shift.AFTER))
+    //$$ @Inject(method = "saveAllChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V", shift = At.Shift.AFTER))
     //$$ private void saveScoreContext(boolean bl, boolean bl2, boolean bl3, CallbackInfoReturnable<Boolean> cir) {
     //$$     this.scbt$scoreboardContext.storeToSaveDataIfDirty(this.overworld().getDataStorage().computeIfAbsent(ScoreboardToolSaveData.TYPE));
     //$$ }
