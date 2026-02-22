@@ -40,9 +40,9 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
-    @Inject(method = "createLevels", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/ServerScoreboard;load(Lnet/minecraft/world/scores/ScoreboardSaveData$Packed;)V"))
-    private void injectSaveData(CallbackInfo ci) {
-//        this.scbt$scoreboardContext.load(serverLevel.getDataStorage().computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
+    @Inject(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;load(Lnet/minecraft/world/scores/ScoreboardSaveData$Packed;)V", shift = At.Shift.AFTER))
+    protected void injectSaveDataWhyErr(CallbackInfo ci, @Local(name = "dimensionDataStorage") DimensionDataStorage dimensionDataStorage) {
+        this.scbt$scoreboardContext.load(dimensionDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
     }
 
     @Inject(
@@ -61,7 +61,7 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     @Final
     public abstract ServerLevel overworld();
 
-    @Inject(method = "saveAllChunks", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V"))
+    @Inject(method = "saveAllChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V", shift = At.Shift.AFTER))
     private void saveScoreContext(boolean bl, boolean bl2, boolean bl3, CallbackInfoReturnable<Boolean> cir) {
         this.scbt$scoreboardContext.storeToSaveDataIfDirty(this.overworld().getDataStorage().computeIfAbsent(ScoreboardToolSaveData.TYPE));
     }

@@ -25,6 +25,13 @@ import java.util.function.BooleanSupplier;
 //#else
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 //#endif
+//#if MC >= 12111
+//$$ import net.cjsah.scbt.data.ScoreboardToolSaveData;
+//$$ import com.llamalad7.mixinextras.sugar.Local;
+//$$ import org.spongepowered.asm.mixin.Final;
+//$$ import net.minecraft.server.level.ServerLevel;
+//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//#endif
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements ScoreboardToolFake {
@@ -46,9 +53,23 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
+    //#if MC >= 12111
+    //$$ @Inject(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;load(Lnet/minecraft/world/scores/ScoreboardSaveData$Packed;)V", shift = At.Shift.AFTER))
+    //#else
     @Inject(method = "readScoreboard", at = @At("RETURN"))
-    private void injectSaveData(DimensionDataStorage dimensionDataStorage, CallbackInfo ci) {
-        //#if MC >= 12105
+    //#endif
+    private void injectSaveData(
+        //#if MC < 12111
+        DimensionDataStorage dimensionDataStorage,
+        //#endif
+        CallbackInfo ci
+        //#if MC >= 12111
+        //$$ , @Local(name = "dimensionDataStorage") DimensionDataStorage dimensionDataStorage
+        //#endif
+    ) {
+        //#if MC >= 12111
+        //$$ this.scbt$scoreboardContext.load(dimensionDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
+        //#elseif MC >= 12105
         //$$ dimensionDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE);
         //#else
         dimensionDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");
@@ -66,6 +87,17 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     private void scoreboardTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
         this.scbt$scoreboardContext.getScheduler().tick();
     }
+
+    //#if MC >= 12111
+    //$$ @Shadow
+    //$$ @Final
+    //$$ public abstract ServerLevel overworld();
+    //$$
+    //$$ @Inject(method = "saveAllChunks", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V", shift = At.Shift.AFTER))
+    //$$ private void saveScoreContext(boolean bl, boolean bl2, boolean bl3, CallbackInfoReturnable<Boolean> cir) {
+    //$$     this.scbt$scoreboardContext.storeToSaveDataIfDirty(this.overworld().getDataStorage().computeIfAbsent(ScoreboardToolSaveData.TYPE));
+    //$$ }
+    //#endif
 
     @Override
     public ScoreboardToolContext scbt$getContext() {
