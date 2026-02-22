@@ -43,6 +43,7 @@ public class ScoreboardToolSaveData extends SavedData {
     }
 
     private void loadSchedule(CompoundTag tag) {
+        this.context.getScheduler().clear();
         if (tag.isEmpty()) return;
         for (String key : tag.getAllKeys()) {
             DisplaySlot slot = DisplaySlot.CODEC.byName(key);

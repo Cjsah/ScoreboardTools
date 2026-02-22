@@ -36,6 +36,10 @@ public class ScoreboardScheduler {
         return this.schedules;
     }
 
+    public void clear() {
+        this.schedules.clear();
+    }
+
     public boolean contains(DisplaySlot slot, Objective objective) {
         SlotScheduleImpl impl = this.schedules.get(slot);
         return impl != null && impl.list.contains(objective);

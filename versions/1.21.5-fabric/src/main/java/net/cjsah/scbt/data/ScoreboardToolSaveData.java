@@ -36,6 +36,7 @@ public class ScoreboardToolSaveData extends SavedData {
     }
 
     private void loadSchedule(Map<DisplaySlot, SchedulePacked> schedules) {
+        this.context.getScheduler().clear();
         for (Map.Entry<DisplaySlot, SchedulePacked> entry : schedules.entrySet()) {
             SchedulePacked schedule = entry.getValue();
             this.context.initScoreScheduler(
