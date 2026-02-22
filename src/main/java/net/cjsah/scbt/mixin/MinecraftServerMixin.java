@@ -25,9 +25,6 @@ import java.util.function.BooleanSupplier;
 //#else
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 //#endif
-//#if MC >= 12111
-//$$ import com.llamalad7.mixinextras.sugar.Local;
-//#endif
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements ScoreboardToolFake {
@@ -49,23 +46,9 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
-    //#if MC >= 12111
-    //$$ @Inject(method = "createLevels", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/ServerScoreboard;load(Lnet/minecraft/world/scores/ScoreboardSaveData$Packed;)V"))
-    //#else
     @Inject(method = "readScoreboard", at = @At("RETURN"))
-    //#endif
-    private void injectSaveData(
-        //#if MC < 12111
-        DimensionDataStorage dimensionDataStorage,
-        //#endif
-        CallbackInfo ci
-        //#if MC >= 12111
-        //$$ , @Local(name = "dimensionDataStorage") DimensionDataStorage dimensionDataStorage
-        //#endif
-    ) {
-        //#if MC >= 12111
-        //$$ this.scbt$scoreboardContext.load(dimensionDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE).getData());
-        //#elseif MC >= 12105
+    private void injectSaveData(DimensionDataStorage dimensionDataStorage, CallbackInfo ci) {
+        //#if MC >= 12105
         //$$ dimensionDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE);
         //#else
         dimensionDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");

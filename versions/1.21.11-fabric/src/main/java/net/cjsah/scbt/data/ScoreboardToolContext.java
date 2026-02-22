@@ -3,44 +3,82 @@ package net.cjsah.scbt.data;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import net.cjsah.scbt.data.record.IScoreMapper;
-import net.cjsah.scbt.fake.ScoreboardToolFake;
 import net.minecraft.server.ServerScoreboard;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.ScoreboardSaveData;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ScoreboardToolContext {
     public static final Class<?> CARPET_PLAYER_CLASS;
-    public static final SavedDataType<ScoreboardToolSaveData> TYPE = new SavedDataType<>(
-        "scoreboard_tool_data", context ->
-        ((ScoreboardToolFake) context.levelOrThrow().getServer()).scbt$getContext().createData(),
-        context -> {
-            ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.levelOrThrow().getServer()).scbt$getContext();
-            return ScoreboardToolSaveData.Packed.CODEC.xmap(scoreContext::createData, ScoreboardToolSaveData::pack);
-        }, DataFixTypes.SAVED_DATA_SCOREBOARD
-    );
 
     private final ServerScoreboard scoreboard;
-    private final Table<ScoreType, Objective, IScoreMapper> scores = HashBasedTable.create();
     private final ScoreboardScheduler scheduler;
-    private final List<Runnable> dirtyListeners = new ArrayList<>();
     private boolean carpetBotScore = true;
+    private final Table<ScoreType, Objective, IScoreMapper> scores = HashBasedTable.create();
+
     private boolean dirty = false;
 
     public ScoreboardToolContext(ServerScoreboard scoreboard) {
         this.scoreboard = scoreboard;
         this.scheduler = new ScoreboardScheduler(scoreboard, this);
+    }
+
+    public void setCarpetBotScore(boolean carpetBotScore) {
+        this.carpetBotScore = carpetBotScore;
+        this.setDirty();
+    }
+
+    public boolean isCarpetBotScore() {
+        return this.carpetBotScore;
+    }
+
+    public boolean canScore(Player player) {
+        return this.carpetBotScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
+    }
+
+    public void addScore(Player player, ScoreType scoreType) {
+        if (!this.canScore(player)) return;
+        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
+        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
+        row.keySet().forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
+    }
+
+    public void setOriginScore(Player player, ScoreType scoreType, int score) {
+        if (!this.canScore(player)) return;
+        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
+        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
+        row.forEach((objective, scoreMapper) ->
+            scoreboard.getOrCreatePlayerScore(player, objective, true).set(scoreMapper.mapValue(score)));
+    }
+
+    public void addScoreBind(Objective objective, ScoreType type, IScoreMapper scoreMapper) {
+        this.scores.put(type, objective, scoreMapper);
+        this.setDirty();
+    }
+
+    public void removeScoreBind(ScoreType scoreType, Objective objective) {
+        this.scores.remove(scoreType, objective);
+        this.setDirty();
+    }
+
+    public ScoreboardScheduler getScheduler() {
+        return this.scheduler;
+    }
+
+    protected void setDirty() {
+        this.dirty = true;
+    }
+
+    public void storeToSaveDataIfDirty(ScoreboardToolSaveData saveData) {
+        if (this.dirty) {
+            this.dirty = false;
+            saveData.setData(this.store());
+        }
     }
 
     public void load(ScoreboardToolSaveData.Packed packed) {
@@ -97,78 +135,6 @@ public class ScoreboardToolContext {
                 );
             }));
         return new ScoreboardToolSaveData.Packed(this.carpetBotScore, binds, schedules);
-    }
-
-    public void storeToSaveDataIfDirty(ScoreboardToolSaveData saveData) {
-        if (this.dirty) {
-            this.dirty = false;
-            saveData.setData(this.store());
-        }
-    }
-
-
-    public void setCarpetBotScore(boolean carpetBotScore) {
-        this.carpetBotScore = carpetBotScore;
-        this.setDirty();
-    }
-
-    public boolean isCarpetBotScore() {
-        return this.carpetBotScore;
-    }
-
-    public boolean canScore(Player player) {
-        return this.carpetBotScore || CARPET_PLAYER_CLASS == null || !CARPET_PLAYER_CLASS.isInstance(player);
-    }
-
-    public void addScore(Player player, ScoreType scoreType) {
-        if (!this.canScore(player)) return;
-        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
-        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
-        row.keySet().forEach(it -> scoreboard.getOrCreatePlayerScore(player, it, true).increment());
-    }
-
-    public void setOriginScore(Player player, ScoreType scoreType, int score) {
-        if (!this.canScore(player)) return;
-        ServerScoreboard scoreboard = player.level().getServer().getScoreboard();
-        Map<Objective, IScoreMapper> row = this.scores.row(scoreType);
-        row.forEach((objective, scoreMapper) ->
-            scoreboard.getOrCreatePlayerScore(player, objective, true).set(scoreMapper.mapValue(score)));
-    }
-
-    public void addScoreBind(Objective objective, ScoreType type, IScoreMapper scoreMapper) {
-        this.scores.put(type, objective, scoreMapper);
-        this.setDirty();
-    }
-
-    public void removeScoreBind(ScoreType scoreType, Objective objective) {
-        this.scores.remove(scoreType, objective);
-        this.setDirty();
-    }
-
-    public ScoreboardScheduler getScheduler() {
-        return this.scheduler;
-    }
-
-    public void addDirtyListener(Runnable runnable) {
-        this.dirtyListeners.add(runnable);
-    }
-
-    protected void setDirty() {
-        for (Runnable runnable : this.dirtyListeners) {
-            runnable.run();
-        }
-    }
-
-    private ScoreboardToolSaveData createData() {
-        ScoreboardToolSaveData data = new ScoreboardToolSaveData(this);
-        this.addDirtyListener(data::setDirty);
-        return data;
-    }
-
-    private ScoreboardToolSaveData createData(ScoreboardToolSaveData.Packed packed) {
-        ScoreboardToolSaveData data = this.createData();
-        data.load(packed);
-        return data;
     }
 
     static {
