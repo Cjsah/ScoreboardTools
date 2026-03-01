@@ -64,7 +64,7 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         //#endif
         CallbackInfo ci
         //#if MC >= 12111
-        //$$ , @Local(name = "dimensionDataStorage") DimensionDataStorage dimensionDataStorage
+        //$$ , @Local DimensionDataStorage dimensionDataStorage
         //#endif
     ) {
         //#if MC >= 12111
