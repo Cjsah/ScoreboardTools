@@ -9,8 +9,10 @@
     "CommandRegisterMixin",
     "FlintAndSteelItemMixin",
     "MinecraftServerMixin",
-    "ServerPlayerMixin",
-    "ServerPlayerGameModeMixin"
+    "ScoreboardCommandInvoker",
+    "ScoreboardCommandMixin",
+    "ServerPlayerGameModeMixin",
+    "ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
