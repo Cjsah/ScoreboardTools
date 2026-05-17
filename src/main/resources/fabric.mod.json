@@ -19,7 +19,7 @@
     }
   ],
   "contact": {
-    "homepage": "${mod_homepage}",
+    "homepage": "${mod_sources}",
     "issues": "${mod_sources}/issues",
     "sources": "${mod_sources}"
   },
@@ -28,7 +28,7 @@
   "entrypoints": {
   },
   "mixins": [
-    "scbt.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
     "minecraft": "${minecraft_dependency}"

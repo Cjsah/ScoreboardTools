@@ -1,0 +1,142 @@
+final int mcVersion = project.mcVersion
+final boolean unobfuscated = mcVersion >= 26_00_00
+
+apply plugin: unobfuscated ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
+apply plugin: 'com.replaymod.preprocess'
+
+ext {
+    getVersionSuffix = {
+        String buildNumber
+        String buildType = 'build'
+        if (System.getenv("CI_BUILD") == 'false') buildNumber = null
+        else {
+            if (System.getenv("PR_BUILD") != 'false') buildType = 'pr'
+            buildNumber = System.getenv("GITHUB_RUN_NUMBER")
+        }
+        String versionSuffix = (buildNumber != null ? "+${buildType}.${buildNumber}" : "")
+        return versionSuffix
+    }
+}
+
+String versionSuffix = project.getVersionSuffix()
+String versionWithMC = "${project.mod_version}-mc${project.minecraft_version}${versionSuffix}"
+
+version = 'v' + project.mod_version + versionSuffix
+group = project.maven_group
+
+configurations {
+    if (!unobfuscated) {
+        modRuntimeOnly.exclude group: 'net.fabricmc', module: 'fabric-loader'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def autoImplementation = { dep -> unobfuscated ? implementation(dep) : modImplementation(dep) }
+
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    if (!unobfuscated) {
+        mappings loom.layered() {
+            officialMojangMappings()
+        }
+    }
+
+    autoImplementation "net.fabricmc:fabric-loader:${project.property("dependencies.fabric_loader")}"
+}
+
+loom {
+    runConfigs.configureEach {
+        runDir '../../run'
+        var isJbr = System.getProperty('java.vm.vendor').contains('JetBrains')
+        def args = [
+                '-Dmixin.debug.export=true',
+                '-DMC_DEBUG_ENABLED=true',
+                '-DMC_DEBUG_DEV_COMMANDS=true'
+        ]
+        if (isJbr) {
+            args.add("-XX:+AllowEnhancedClassRedefinition")
+        }
+        vmArgs args
+    }
+
+    runConfigs.client {
+        ideConfigGenerated = true
+        def proArgs = ["--username", "Dev"]
+        programArgs proArgs
+    }
+
+    if (!unobfuscated) {
+        mixin {
+            useLegacyMixinAp = true
+        }
+    }
+}
+
+JavaVersion SOURCE_JAVA_VERSION
+JavaVersion TARGET_JAVA_VERSION
+
+if (mcVersion >= 260000) {
+    SOURCE_JAVA_VERSION = JavaVersion.VERSION_25
+    TARGET_JAVA_VERSION = JavaVersion.VERSION_25
+} else if (mcVersion >= 12005) {
+    SOURCE_JAVA_VERSION = JavaVersion.VERSION_21
+    TARGET_JAVA_VERSION = JavaVersion.VERSION_21
+} else if (mcVersion >= 11800) {
+    SOURCE_JAVA_VERSION = JavaVersion.VERSION_17
+    TARGET_JAVA_VERSION = JavaVersion.VERSION_17
+} else if (mcVersion >= 11700) {
+    SOURCE_JAVA_VERSION = JavaVersion.VERSION_16
+    TARGET_JAVA_VERSION = JavaVersion.VERSION_16
+} else {
+    SOURCE_JAVA_VERSION = JavaVersion.VERSION_1_8
+    TARGET_JAVA_VERSION = JavaVersion.VERSION_17
+}
+JavaVersion MIXIN_COMPATIBILITY_LEVEL = TARGET_JAVA_VERSION
+
+base {
+    archivesName.set(project.archives_base_name + '-mc' + project.minecraft_version)
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = SOURCE_JAVA_VERSION
+    targetCompatibility = TARGET_JAVA_VERSION
+}
+
+processResources {
+    outputs.upToDateWhen { false }
+
+    from("${rootDir}/LICENSE")
+    from("${rootDir}/icon.png") {
+        into("assets/${rootProject.mod_id}")
+    }
+
+    inputs.property "version", versionWithMC
+
+    def mod_id_underscore = rootProject.mod_id.toString().replace("-", "_")
+
+    filesMatching("fabric.mod.json") {
+        expand([
+                "mod_id"              : mod_id_underscore,
+                "mod_version"         : versionWithMC,
+                "mod_name"            : rootProject.property("mod.name"),
+                "minecraft_dependency": project.minecraft_dependency,
+                "mod_sources"         : rootProject.property("mod.sources"),
+                "mod_description"     : rootProject.property("mod.description"),
+                "mod_license"         : rootProject.property("mod.license"),
+        ])
+    }
+
+    filesMatching("${mod_id_underscore}.mixins.json") {
+        filter {
+            text -> text.replace("/*JAVA_VERSION*/", "JAVA_${MIXIN_COMPATIBILITY_LEVEL.ordinal() + 1}")
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { JavaCompile task ->
+    task.options.encoding("UTF-8")
+}
