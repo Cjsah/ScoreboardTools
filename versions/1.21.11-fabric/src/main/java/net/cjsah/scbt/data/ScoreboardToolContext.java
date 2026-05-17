@@ -66,6 +66,18 @@ public class ScoreboardToolContext {
         this.setDirty();
     }
 
+    public void removeObjetive(Objective objective) {
+        Map<ScoreType, IScoreMapper> column = this.scores.column(objective);
+
+        for (ScoreType type : column.keySet()) {
+            this.scores.remove(type, objective);
+        }
+
+        for (DisplaySlot slot : DisplaySlot.values()) {
+            this.scheduler.remove(slot, objective);
+        }
+    }
+
     public ScoreboardScheduler getScheduler() {
         return this.scheduler;
     }

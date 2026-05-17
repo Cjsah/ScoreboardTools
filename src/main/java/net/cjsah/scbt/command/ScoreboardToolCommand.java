@@ -1,7 +1,6 @@
 package net.cjsah.scbt.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -56,9 +55,9 @@ public class ScoreboardToolCommand {
     }
 
     private static int addObjective(CommandContext<CommandSourceStack> context, ScoreType type, IScoreMapper scoreMapper, boolean displayName)
-        //#if MC >= 12109
-        //$$ throws CommandSyntaxException
-        //#endif
+    //#if MC >= 12109
+    //$$ throws CommandSyntaxException
+    //#endif
     {
         CommandSourceStack source = context.getSource();
         String name = StringArgumentType.getString(context, "objective");
@@ -86,19 +85,28 @@ public class ScoreboardToolCommand {
         scoreContext.removeObjetive(objective);
     }
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-
-        dispatcher.register(literal("scoretool")
-            .then(literal("loop").then(argument("slot", ScoreboardSlotArgument.displaySlot())
-                .then(literal("add").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::add)))
-                .then(literal("remove").then(argument("objective", ObjectiveArgument.objective()).executes(ScoreboardToolCommand::remove)))
-                .then(literal("schedule").then(argument("schedule", IntegerArgumentType.integer(1)).executes(ScoreboardToolCommand::schedule)))
-                .then(literal("enable").executes(ScoreboardToolCommand::enable))
-                .then(literal("disable").executes(ScoreboardToolCommand::disable))
-            ))
-            .then(literal("fakePlayerScore").executes(ScoreboardToolCommand::showFakePlayerScore).then(argument("enable", BoolArgumentType.bool()).executes(ScoreboardToolCommand::changeFakePlayerScore)))
-        );
-
+    public static void registerCommand(ArgumentBuilder<CommandSourceStack, ?> builder) {
+        builder
+            .then(literal("loop")
+                .then(argument("slot", ScoreboardSlotArgument.displaySlot())
+                    .then(literal("add")
+                        .then(argument("objective", ObjectiveArgument.objective())
+                            .executes(ScoreboardToolCommand::add)))
+                    .then(literal("remove")
+                        .then(argument("objective", ObjectiveArgument.objective())
+                            .executes(ScoreboardToolCommand::remove)))
+                    .then(literal("schedule")
+                        .then(argument("schedule", IntegerArgumentType.integer(1))
+                            .executes(ScoreboardToolCommand::schedule)))
+                    .then(literal("enable")
+                        .executes(ScoreboardToolCommand::enable))
+                    .then(literal("disable")
+                        .executes(ScoreboardToolCommand::disable))
+                ))
+            .then(literal("fakePlayerScore")
+                .executes(ScoreboardToolCommand::showFakePlayerScore)
+                .then(argument("enable", BoolArgumentType.bool())
+                    .executes(ScoreboardToolCommand::changeFakePlayerScore)));
     }
 
     private static int add(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
