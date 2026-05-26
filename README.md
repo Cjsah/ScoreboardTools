@@ -1,6 +1,8 @@
 # ScoreboardTools
 
-> Due to Fabric Api's data synchronization behavior, this mod does not register some new Scoreboard Criterion. So you need to create a scoreboard of criteria `dummy` and then bind the score type with the `/scbt`command
+> Due to Fabric Api's data synchronization behavior, this mod does not register any new Scoreboard Criterion.
+> 
+> Therefore, all newly created objectives are `dummy`, and their scores are updated through an internal binding mechanism.
 
 ## Added Scoreboard Criterion
 - `minedCount`
@@ -8,10 +10,11 @@
 - `onlineTime`
 - `level`
 - `elytraFlyingDistance`
+- `finishFishing`
 
 ## Commands
-- `/scbt [bind/unbind] [type] [scoreboard objective]` Bind or Unbind score criterion to a scoreboard objective
-- `/scbt loop [slot] [add/remove] [scoreboard objective]` Add or Remove a scoreboard objective form slot's scorlling list
-- `/scbt loop [slot] [enable/disable]` Switch scoreboard scroll on slot
-- `/scbt loop [slot] schedule [ticks]` Change scoreboard scoll intervals(ticks) on slot
-- `/scbt fakePlayerScore [true/false]` Global set whether fake player counts on the scoreboard
+- `/scoreboard objective add <name> <criteria> [type]` Create a new scoreboard objective with criteria
+- `/scoreboard loop [slot] [add/remove] [scoreboard objective]` Add or Remove a scoreboard objective form slot's scorlling list
+- `/scoreboard loop [slot] [enable/disable]` Switch scoreboard scroll on slot
+- `/scoreboard loop [slot] schedule [ticks]` Change scoreboard scoll intervals(ticks) on slot
+- `/scoreboard fakePlayerScore [true/false]` Global set whether fake player counts on the scoreboard
