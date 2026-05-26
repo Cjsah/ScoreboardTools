@@ -14,7 +14,8 @@ public enum ScoreType {
     PLACED_COUNT("placedCount", DummyRecordType.class),
     LEVEL("level", DummyRecordType.class),
     ONLINE_TIME("onlineTime", OnlineTimeRecordType.class),
-    FLYING_DISTANCE("flyingDistance", FlyingDistanceRecordType.class)
+    FLYING_DISTANCE("flyingDistance", FlyingDistanceRecordType.class),
+    FINISH_FISHING("finishFishing", DummyRecordType.class),
     ;
 
     private final String name;
