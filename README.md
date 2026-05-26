@@ -14,7 +14,7 @@
 
 ## Commands
 - `/scoreboard objective add <name> <criteria> [type]` Create a new scoreboard objective with criteria
-- `/scoreboard loop [slot] [add/remove] [scoreboard objective]` Add or Remove a scoreboard objective form slot's scorlling list
-- `/scoreboard loop [slot] [enable/disable]` Switch scoreboard scroll on slot
-- `/scoreboard loop [slot] schedule [ticks]` Change scoreboard scoll intervals(ticks) on slot
-- `/scoreboard fakePlayerScore [true/false]` Global set whether fake player counts on the scoreboard
+- `/scoreboard loop <slot> <add/remove> <objective>` Add or Remove a scoreboard objective form slot's scorlling list
+- `/scoreboard loop <slot> <enable/disable>` Switch scoreboard scroll on slot
+- `/scoreboard loop <slot> schedule <ticks>` Change scoreboard scoll intervals(ticks) on slot
+- `/scoreboard fakePlayerScore <true/false>` Global set whether fake player counts on the scoreboard
