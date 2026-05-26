@@ -8,7 +8,6 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,9 +31,22 @@ import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#endif
+//#if MC >= 260000
+//$$ import net.minecraft.world.level.gamerules.GameRules;
+//$$ import java.util.Optional;
+//$$ import net.minecraft.world.level.storage.SavedDataStorage;
+//#else
+import net.minecraft.world.level.storage.DimensionDataStorage;
+//#endif
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements ScoreboardToolFake {
+
+    //#if MC >= 260000
+    //$$ @Final
+    //$$ @Shadow
+    //$$ private SavedDataStorage savedDataStorage;
+    //#endif
 
     @Unique
     private ScoreboardToolContext scbt$scoreboardContext;
@@ -43,13 +55,27 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     public abstract ServerScoreboard getScoreboard();
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services,
-                      //#if MC >= 12109
-                      //$$ LevelLoadListener levelLoadListener,
-                      //#else
-                      ChunkProgressListenerFactory chunkProgressListenerFactory,
-                      //#endif
-                      CallbackInfo ci) {
+    private void init(
+        Thread thread,
+        LevelStorageSource.LevelStorageAccess levelStorageAccess,
+        PackRepository packRepository,
+        WorldStem worldStem,
+        //#if MC >= 260000
+        //$$ Optional<GameRules> gameRules,
+        //#endif
+        Proxy proxy,
+        DataFixer dataFixer,
+        Services services,
+        //#if MC >= 12109
+        //$$ LevelLoadListener levelLoadListener,
+        //#if MC >= 260000
+        //$$ boolean propagatesCrashes,
+        //#endif
+        //#else
+        ChunkProgressListenerFactory chunkProgressListenerFactory,
+        //#endif
+        CallbackInfo ci
+    ) {
         this.scbt$scoreboardContext = new ScoreboardToolContext(this.getScoreboard());
     }
 
@@ -60,29 +86,29 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
     //#endif
     private void injectSaveData(
         //#if MC < 12111
-        DimensionDataStorage dimensionDataStorage,
+        DimensionDataStorage savedDataStorage,
         //#endif
         CallbackInfo ci
-        //#if MC >= 12111
-        //$$ , @Local DimensionDataStorage dimensionDataStorage
+        //#if MC >= 12111 && MC < 260000
+        //$$ , @Local DimensionDataStorage savedDataStorage
         //#endif
     ) {
         //#if MC >= 12111
-        //$$ this.scbt$scoreboardContext.load(dimensionDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
+        //$$ this.scbt$scoreboardContext.load(savedDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
         //#elseif MC >= 12105
-        //$$ dimensionDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE);
+        //$$ savedDataStorage.computeIfAbsent(ScoreboardToolContext.TYPE);
         //#else
-        dimensionDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");
+        savedDataStorage.computeIfAbsent(this.scbt$scoreboardContext.dataFactory(), "scoreboard_tool_data");
         //#endif
     }
 
     @Inject(
-            method = "tickChildren",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V",
-                    ordinal = 0
-            )
+        method = "tickChildren",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V",
+            ordinal = 0
+        )
     )
     private void scoreboardTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
         this.scbt$scoreboardContext.getScheduler().tick();

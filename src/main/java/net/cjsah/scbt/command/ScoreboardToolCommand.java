@@ -55,7 +55,7 @@ public class ScoreboardToolCommand {
     }
 
     private static int addObjective(CommandContext<CommandSourceStack> context, ScoreType type, IScoreMapper scoreMapper, boolean displayName)
-    //#if MC >= 12109
+    //#if MC >= 12105
     //$$ throws CommandSyntaxException
     //#endif
     {
@@ -63,7 +63,7 @@ public class ScoreboardToolCommand {
         String name = StringArgumentType.getString(context, "objective");
         ObjectiveCriteria criteria = ObjectiveCriteria.DUMMY;
         Component component = displayName ?
-            //#if MC < 12109
+            //#if MC < 12105
             ComponentArgument.getComponent(context, "displayName")
             //#else
             //$$ ComponentArgument.getResolvedComponent(context, "displayName")

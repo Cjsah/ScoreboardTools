@@ -9,10 +9,17 @@ import net.minecraft.world.scores.DisplaySlot;
 
 import java.util.List;
 import java.util.Map;
+//#if MC >= 260000
+//$$ import net.minecraft.resources.Identifier;
+//#endif
 
 public class ScoreboardToolSaveData extends SavedData {
     public static final SavedDataType<ScoreboardToolSaveData> TYPE = new SavedDataType<>(
+        //#if MC >= 260000
+        //$$ Identifier.fromNamespaceAndPath("scoreboard_tools", "scoreboard_tool_data"),
+        //#else
         "scoreboard_tool_data",
+        //#endif
         ScoreboardToolSaveData::new,
         Packed.CODEC.xmap(ScoreboardToolSaveData::new, ScoreboardToolSaveData::getData),
         DataFixTypes.SAVED_DATA_SCOREBOARD

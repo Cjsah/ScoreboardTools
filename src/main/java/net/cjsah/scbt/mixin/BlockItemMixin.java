@@ -15,11 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockItem.class)
 public class BlockItemMixin {
     @Inject(
-            method = "place",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/advancements/critereon/ItemUsedOnLocationTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)V"
-            )
+        method = "place",
+        at = @At(
+            value = "INVOKE",
+            //#if MC < 260000
+            target = "Lnet/minecraft/advancements/critereon/ItemUsedOnLocationTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)V"
+            //#else
+            //$$ target = "Lnet/minecraft/advancements/criterion/ItemUsedOnLocationTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemInstance;)V"
+            //#endif
+        )
     )
     private void placedBlock(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> cir) {
         MinecraftServer server = context.getLevel().getServer();
