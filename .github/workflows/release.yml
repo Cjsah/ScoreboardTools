@@ -6,64 +6,23 @@ on:
 
 jobs:
   build:
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      publish: 'true'
+  publish:
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
         with:
-          java-version: '21'
-          distribution: 'zulu'
-      - name: Set build number
-        run: sed -i "s/undefined/$GITHUB_RUN_NUMBER/g" gradle.properties
-      - name: Read gradle properties
-        id: properties_v
-        uses: christian-draeger/read-properties@1.1.1
-        with:
-          path: gradle.properties
-          properties: mod_version mc_version support_mc_versions
-      - name: Get version
-        id: version
-        run: |
-          main_version=${{ steps.properties_v.outputs.mod_version }}
-          mc_version=${{ steps.properties_v.outputs.mc_version }}
-          version=$main_version+build.$GITHUB_RUN_NUMBER
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "main_version=$main_version" >> $GITHUB_OUTPUT
-          echo "mc_version=$mc_version" >> $GITHUB_OUTPUT
-          echo "support_mc_versions=${{ steps.properties_v.outputs.support_mc_versions }}" >> $GITHUB_OUTPUT
-      - name: Grant execute permission
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew build
-      - name: Publish artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts for ${{ steps.version.outputs.version }}
-          path: build/libs/
-      - name: Upload release jar
-        uses: softprops/action-gh-release@v0.1.15
-        with:
-          files: |
-            build/libs/ScoreboardTools-${{ steps.version.outputs.version }}.jar
-      - name: Publish mod
-        uses: Kir-Antipov/mc-publish@v3.3
-        continue-on-error: true
-        with:
-          name: "ScoreboardTools v${{ steps.version.outputs.main_version }}"
-          version: ${{ steps.version.outputs.version }}
-          game-versions: ${{ steps.version.outputs.support_mc_versions }}
-          version-type: release
-          java: 21
-          fail-mode: skip
-          changelog: ${{ github.event.release.body }}
-          loaders: fabric
+          name: 'Artifacts'
+          path: dist
 
-          modrinth-id: t0xs6TI7
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          modrinth-featured: true
-
-          files: |
-            build/libs/ScoreboardTools-${{ steps.version.outputs.version }}.jar
-            build/libs/ScoreboardTools-${{ steps.version.outputs.version }}-sources.jar
+      - name: Publish
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*.jar
