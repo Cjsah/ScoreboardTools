@@ -8,7 +8,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -66,7 +65,7 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
 
     @Inject(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;load(Lnet/minecraft/world/scores/ScoreboardSaveData$Packed;)V", shift = At.Shift.AFTER))
     private void injectSaveData(CallbackInfo ci) {
-        this.scbt$scoreboardContext.load(savedDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
+        this.scbt$scoreboardContext.load(this.savedDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE).getData());
     }
 
     @Inject(
@@ -81,13 +80,9 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         this.scbt$scoreboardContext.getScheduler().tick();
     }
 
-    @Shadow
-    @Final
-    public abstract ServerLevel overworld();
-
     @Inject(method = "saveAllChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ServerScoreboard;storeToSaveDataIfDirty(Lnet/minecraft/world/scores/ScoreboardSaveData;)V", shift = At.Shift.AFTER))
     private void saveScoreContext(boolean silent, boolean flush, boolean force, CallbackInfoReturnable<Boolean> cir) {
-        this.scbt$scoreboardContext.storeToSaveDataIfDirty(this.overworld().getDataStorage().computeIfAbsent(ScoreboardToolSaveData.TYPE));
+        this.scbt$scoreboardContext.storeToSaveDataIfDirty(this.savedDataStorage.computeIfAbsent(ScoreboardToolSaveData.TYPE));
     }
 
     @Override
