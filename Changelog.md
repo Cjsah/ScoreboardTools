@@ -1,1 +1,3 @@
-- Fixed mod name
+- Add support for minecraft 26.2
+- Add `/scoreboard objectives (bind/unbind)` command
+- Fixed the scoreboard failed to persist in minecraft versions 26.1+.

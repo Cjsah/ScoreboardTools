@@ -70,7 +70,6 @@ public class ScoreboardCommandMixin {
         return builder;
     }
 
-
     @Inject(method = "removeObjective", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;removeObjective(Lnet/minecraft/world/scores/Objective;)V"))
     private static void removeToolObjective(CommandSourceStack source, Objective objective, CallbackInfoReturnable<Integer> cir) {
         ScoreboardToolCommand.removeObjective(source, objective);
