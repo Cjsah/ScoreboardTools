@@ -13,12 +13,14 @@ preprocess {
 	def mc12109_fabric = createNode("1.21.9-fabric", 1_21_09, "mojang")
 	def mc12111_fabric = createNode("1.21.11-fabric", 1_21_11, "mojang")
 	def mc260102_fabric = createNode("26.1.2-fabric", 26_01_02, "mojang")
+	def mc260200_fabric = createNode("26.2-fabric", 26_02_00, "mojang")
 
 	mc12101_fabric.link(mc12102_fabric, null)
 	mc12102_fabric.link(mc12105_fabric, null)
 	mc12105_fabric.link(mc12109_fabric, null)
 	mc12109_fabric.link(mc12111_fabric, null)
 	mc12111_fabric.link(mc260102_fabric, null)
+	mc260102_fabric.link(mc260200_fabric, null)
 
 	for (final def node in getNodes()) {
 		findProject(node.project).ext.mcVersion = node.mcVersion

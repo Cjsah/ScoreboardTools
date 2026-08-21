@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.scbt.data.ScoreType;
@@ -30,15 +31,40 @@ import static net.minecraft.commands.Commands.literal;
 
 public class ScoreboardToolCommand {
 
-    public static void registerCriteria(ArgumentBuilder<CommandSourceStack, ?> builder, CommandBuildContext commandContext) {
+    public static void registerBind(ArgumentBuilder<CommandSourceStack, ?> builder) throws CommandSyntaxException {
+        builder
+            .then(literal("bind").then(iteratorScoreCommand(ScoreboardToolCommand::bind)))
+            .then(literal("unbind").then(iteratorScoreCommand(
+                (context, scoreType, mapper) -> unbind(context)
+            )));
+    }
+
+    public static void registerCriteria(ArgumentBuilder<CommandSourceStack, ?> builder, CommandBuildContext commandContext) throws CommandSyntaxException {
+        iteratorScore(builder, (node, scoreType, mapper) ->
+            resolveExecutor(node, commandContext, scoreType, mapper)
+        );
+    }
+
+    private static ArgumentBuilder<CommandSourceStack, ?> iteratorScoreCommand(ScoreFunction<CommandContext<CommandSourceStack>> command) throws CommandSyntaxException {
+        RequiredArgumentBuilder<CommandSourceStack, String> builder = argument("objective", ObjectiveArgument.objective());
+        iteratorScore(builder, (node, scoreType, mapper) ->
+            node.executes(context -> {
+                command.accept(context, scoreType, mapper);
+                return 1;
+            })
+        );
+        return builder;
+    }
+
+    private static void iteratorScore(ArgumentBuilder<CommandSourceStack, ?> builder, ScoreFunction<ArgumentBuilder<CommandSourceStack, ?>> consumer) throws CommandSyntaxException {
         for (ScoreType scoreType : ScoreType.values()) {
             ArgumentBuilder<CommandSourceStack, ?> node = literal(scoreType.getName());
             if (scoreType.getRecordType() == DummyRecordType.class) {
-                resolveExecutor(node, commandContext, scoreType, DummyRecordType.DUMMY);
+                consumer.accept(node, scoreType, DummyRecordType.DUMMY);
             } else {
                 for (Enum<?> recordType : scoreType.getRecordType().getEnumConstants()) {
                     ArgumentBuilder<CommandSourceStack, ?> arg = literal(recordType.name());
-                    resolveExecutor(arg, commandContext, scoreType, scoreType.getScoreMapper(recordType.ordinal()));
+                    consumer.accept(arg, scoreType, scoreType.getScoreMapper(recordType.ordinal()));
                     node.then(arg);
                 }
             }
@@ -129,6 +155,18 @@ public class ScoreboardToolCommand {
         });
     }
 
+    private static void bind(CommandContext<CommandSourceStack> context, ScoreType type, IScoreMapper scoreMapper) throws CommandSyntaxException {
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
+        Objective objective = ObjectiveArgument.getObjective(context, "objective");
+        scoreContext.addScoreBind(objective, type, scoreMapper);
+    }
+
+    private static void unbind(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ScoreboardToolContext scoreContext = ((ScoreboardToolFake) context.getSource().getServer()).scbt$getContext();
+        Objective objective = ObjectiveArgument.getObjective(context, "objective");
+        scoreContext.removeObjetive(objective);
+    }
+
     private static int schedule(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return executeInternal(context, (internal, slot) -> {
             internal.setSchedule(slot, IntegerArgumentType.getInteger(context, "schedule"));
@@ -180,5 +218,10 @@ public class ScoreboardToolCommand {
     @FunctionalInterface
     private interface BiConsumer<T, R> {
         void accept(T t, R r) throws CommandSyntaxException;
+    }
+
+    @FunctionalInterface
+    private interface ScoreFunction<T> {
+        void accept(T builder, ScoreType scoreType, IScoreMapper mapper) throws CommandSyntaxException;
     }
 }
