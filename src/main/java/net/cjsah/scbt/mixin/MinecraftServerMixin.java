@@ -35,6 +35,9 @@ import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 //$$ import net.minecraft.world.level.gamerules.GameRules;
 //$$ import java.util.Optional;
 //$$ import net.minecraft.world.level.storage.SavedDataStorage;
+//#if MC >= 260200
+//$$ import net.minecraft.server.notifications.NotificationManager;
+//#endif
 //#else
 import net.minecraft.world.level.storage.DimensionDataStorage;
 //#endif
@@ -70,6 +73,9 @@ public abstract class MinecraftServerMixin implements ScoreboardToolFake {
         //$$ LevelLoadListener levelLoadListener,
         //#if MC >= 260000
         //$$ boolean propagatesCrashes,
+        //#if MC >= 260200
+        //$$ NotificationManager notificationManager,
+        //#endif
         //#endif
         //#else
         ChunkProgressListenerFactory chunkProgressListenerFactory,
